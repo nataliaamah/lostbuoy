@@ -3,6 +3,9 @@
         android:label="lostbuoy"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyDHSxg8svr6voH6Edrb7-oITyB3UswJGIs"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"
