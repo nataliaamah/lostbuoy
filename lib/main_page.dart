@@ -13,32 +13,34 @@ class _MainPageState extends State<MainPage> {
   // Center of UiTM campus
   final LatLng _center = LatLng(5.261832, 103.165598);
 
-  // UiTM campus boundaries
+  // UiTM campus boundaries with tighter limits
   final LatLngBounds _uitmBounds = LatLngBounds(
-    southwest: LatLng(5.2600, 103.1640), // Adjusted campus boundary
-    northeast: LatLng(5.2630, 103.1670),
+    southwest: LatLng(5.2605, 103.1645), // Slightly reduced boundary
+    northeast: LatLng(5.2630, 103.1667),
   );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: GoogleMap(
-        onMapCreated: (controller) {
+        onMapCreated: (controller) async {
           _mapController = controller;
 
-          // Move the camera to focus on UiTM's boundaries
-          _mapController.moveCamera(
-            CameraUpdate.newLatLngBounds(_uitmBounds, 50),
+          // Move the camera to focus tightly within UiTM's boundaries
+          await _mapController.moveCamera(
+            CameraUpdate.newLatLngBounds(_uitmBounds, 25), // Reduced padding to tighten view
           );
+
+          // Apply custom map style
+          _mapController.setMapStyle(mapStyle);
         },
         initialCameraPosition: CameraPosition(
           target: _center, // Center of UiTM
-          zoom: 18, // Default zoom level to start closer
+          zoom: 18.5, // Start closer for better detail
         ),
         mapType: MapType.normal,
-        minMaxZoomPreference: MinMaxZoomPreference(18, 22), // Focus on zooming in
-        cameraTargetBounds: CameraTargetBounds(_uitmBounds), // Constrain movement to UiTM bounds
-        style: mapStyle, // Apply map styling directly
+        minMaxZoomPreference: MinMaxZoomPreference(18.5, 22), // Focus on zooming in, restrict zooming out
+        cameraTargetBounds: CameraTargetBounds(_uitmBounds), // Constrain camera movement to UiTM bounds
         myLocationEnabled: false,
         myLocationButtonEnabled: false,
         zoomControlsEnabled: false,
