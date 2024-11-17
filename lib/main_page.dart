@@ -1,6 +1,6 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:lostbuoy/Utils/map_style.dart';
 
 class MainPage extends StatefulWidget {
   @override
@@ -9,45 +9,39 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   late GoogleMapController _mapController;
-  final Set<Marker> _markers = {};
 
-  // Center of UiTM Kuala Terengganu (smaller bounds center)
-  final LatLng _center = LatLng(5.2618, 103.1656);
+  // Center of UiTM campus
+  final LatLng _center = LatLng(5.261832, 103.165598);
 
-  // Smaller UiTM Kuala Terengganu bounds
+  // UiTM campus boundaries
   final LatLngBounds _uitmBounds = LatLngBounds(
-    southwest: LatLng(5.2611, 103.1653), // Tighter southwest corner
-    northeast: LatLng(5.2625, 103.1659), // Tighter northeast corner
+    southwest: LatLng(5.2600, 103.1640), // Adjusted campus boundary
+    northeast: LatLng(5.2630, 103.1670),
   );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Lost Buoy'),
-      ),
       body: GoogleMap(
-        onMapCreated: (GoogleMapController controller) {
+        onMapCreated: (controller) {
           _mapController = controller;
 
-          // Move the camera to fit the smaller UiTM bounds
-          _mapController.animateCamera(
+          // Move the camera to focus on UiTM's boundaries
+          _mapController.moveCamera(
             CameraUpdate.newLatLngBounds(_uitmBounds, 50),
           );
         },
         initialCameraPosition: CameraPosition(
-          target: _center,
-          zoom: 17, // Slightly higher zoom for smaller area
+          target: _center, // Center of UiTM
+          zoom: 18, // Default zoom level to start closer
         ),
-        markers: _markers,
         mapType: MapType.normal,
-        myLocationEnabled: true,
-        myLocationButtonEnabled: true,
-        compassEnabled: true,
-        buildingsEnabled: true,
-
-        // Restrict camera movements to the smaller UiTM bounds
-        cameraTargetBounds: CameraTargetBounds(_uitmBounds),
+        minMaxZoomPreference: MinMaxZoomPreference(18, 22), // Focus on zooming in
+        cameraTargetBounds: CameraTargetBounds(_uitmBounds), // Constrain movement to UiTM bounds
+        style: mapStyle, // Apply map styling directly
+        myLocationEnabled: false,
+        myLocationButtonEnabled: false,
+        zoomControlsEnabled: false,
       ),
     );
   }
