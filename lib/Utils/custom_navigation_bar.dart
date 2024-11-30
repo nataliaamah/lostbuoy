@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:lostbuoy/create_ad.dart';
 
 class CustomNavigationBar extends StatelessWidget {
-  const CustomNavigationBar({Key? key}) : super(key: key);
+  const CustomNavigationBar({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +26,7 @@ class CustomNavigationBar extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.location_on),
+                  icon: const Icon(Icons.home_filled),
                   onPressed: () {
                     // Handle home button press
                   },
@@ -37,9 +38,9 @@ class CustomNavigationBar extends StatelessWidget {
                   },
                 ),
                 IconButton(
-                  icon: const CircleAvatar(
-                    radius: 12,
-                    backgroundImage: AssetImage('assets/profile.jpg'), // Replace with actual profile image
+                  icon: const Icon(
+                    Icons.person, // Profile icon
+                    size: 30, // Icon size (adjust as needed)
                   ),
                   onPressed: () {
                     // Handle profile button press
@@ -57,7 +58,7 @@ class CustomNavigationBar extends StatelessWidget {
             child: Container(
               width: 80, // Increase the width
               height: 80, // Increase the height
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white, // The background color of the circle
                 shape: BoxShape.circle,
                 boxShadow: [
@@ -71,14 +72,18 @@ class CustomNavigationBar extends StatelessWidget {
                 child: Container(
                   width: 60, // Adjust inner blue button width
                   height: 60, // Adjust inner blue button height
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Colors.blue,
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
                     icon: const Icon(Icons.add, color: Colors.white),
                     onPressed: () {
-                      // Handle add button press
+                      // Navigate to the CreateAdPage
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => CreateAdPage()),
+                      );
                     },
                   ),
                 ),
