@@ -7,9 +7,9 @@ class CustomNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 70,
+      height: 60,
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: Color(0xFF8B5DFF),
         boxShadow: [
           BoxShadow(
             color: Colors.black12,
@@ -27,21 +27,26 @@ class CustomNavigationBar extends StatelessWidget {
               children: [
                 IconButton(
                   icon: const Icon(Icons.home_filled),
+                  iconSize: 30,
                   onPressed: () {
                     // Handle home button press
                   },
+                  color: Colors.white,
                 ),
                 IconButton(
                   icon: const Icon(Icons.notifications),
+                  iconSize: 30,
                   onPressed: () {
                     // Handle notifications button press
                   },
+                  color: Colors.white,
                 ),
                 IconButton(
                   icon: const Icon(
                     Icons.person, // Profile icon
                     size: 30, // Icon size (adjust as needed)
                   ),
+                  color: Colors.white,
                   onPressed: () {
                     // Handle profile button press
                   },
@@ -54,12 +59,12 @@ class CustomNavigationBar extends StatelessWidget {
           // Floating Action Button styled as the '+', placed at the far right
           Positioned(
             bottom: 15, // Adjust to position the circle further down if needed
-            right: 10,  // Shift it a little to the left for alignment
+            right: 15,  // Shift it a little to the left for alignment
             child: Container(
-              width: 80, // Increase the width
-              height: 80, // Increase the height
+              width: 90, // Increase the width
+              height: 90, // Increase the height
               decoration: const BoxDecoration(
-                color: Colors.white, // The background color of the circle
+                color: Color(0xFF8B5DFF), // The background color of the circle
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
@@ -70,19 +75,20 @@ class CustomNavigationBar extends StatelessWidget {
               ),
               child: Center(
                 child: Container(
-                  width: 60, // Adjust inner blue button width
-                  height: 60, // Adjust inner blue button height
+                  width: 70, // Adjust inner blue button width
+                  height: 70, // Adjust inner blue button height
                   decoration: const BoxDecoration(
-                    color: Colors.blue,
+                    color: Colors.white,
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
-                    icon: const Icon(Icons.add, color: Colors.white),
+                    icon: const Icon(Icons.add, color: Color(0xFF8B5DFF),),
+                    iconSize: 35,
                     onPressed: () {
                       // Navigate to the CreateAdPage
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => CreateAdPage()),
+                        MaterialPageRoute(builder: (context) => const CreateAdPage()),
                       );
                     },
                   ),
@@ -100,7 +106,7 @@ class NavBarPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final Paint paint = Paint()
-      ..color = Colors.white
+      ..color = const Color(0xFF8B5DFF)
       ..style = PaintingStyle.fill;
 
     final Path path = Path();
