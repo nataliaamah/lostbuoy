@@ -88,7 +88,7 @@ class CustomNavigationBar extends StatelessWidget {
                       // Navigate to the CreateAdPage
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const CreateAdPage()),
+                        MaterialPageRoute(builder: (context) => CreateAdPage()),
                       );
                     },
                   ),

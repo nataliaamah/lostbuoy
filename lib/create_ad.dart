@@ -6,35 +6,30 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 
 class CreateAdPage extends StatefulWidget {
-  const CreateAdPage({super.key});
-
   @override
-  _CreateAdPageState createState() => _CreateAdPageState();
+  State<CreateAdPage> createState() => _CreateAdPageState();
 }
 
 class _CreateAdPageState extends State<CreateAdPage> {
   final _formKey = GlobalKey<FormState>();
-  String? title, description, postType;
+  String? title, description, postType = 'Lost';
   XFile? image;
-  LatLng? selectedLocation; // Store the selected location
+  LatLng? selectedLocation;
 
-  final Set<Marker> _markers = {}; // To hold markers on the map
+  final Set<Marker> _markers = {};
 
-  // Function to select an image
   Future<void> _selectImage() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? pickedImage = await picker.pickImage(source: ImageSource.gallery);
+    final picker = ImagePicker();
+    final pickedImage = await picker.pickImage(source: ImageSource.gallery);
 
     setState(() {
       image = pickedImage;
     });
   }
 
-  // Function to select location using Google Maps (user tapping)
   void _onMapTapped(LatLng location) {
     setState(() {
       selectedLocation = location;
-      // Add a marker where the user tapped
       _markers.clear();
       _markers.add(Marker(
         markerId: const MarkerId('selected_location'),
@@ -44,45 +39,60 @@ class _CreateAdPageState extends State<CreateAdPage> {
     });
   }
 
-  // Function to save the ad and upload to Firestore and Storage
   Future<void> _saveAd() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
-      if (selectedLocation == null) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select a location')));
+      // Check if an image has been selected
+      if (image == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please upload an image.')));
         return;
       }
 
-      // Upload the image and get the download URL
+      // Check if a location has been selected
+      if (selectedLocation == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please select a location on the map.')));
+        return;
+      }
+
+      // Upload the image to Firebase Storage
       String? imageUrl = await _uploadImage(File(image!.path));
 
+      // Check if the image upload succeeded
       if (imageUrl != null) {
-        // Save the ad data to Firestore
         try {
+          // Save the ad data to Firestore
           await FirebaseFirestore.instance.collection('ads').add({
             'title': title,
             'description': description,
             'postType': postType,
             'imageUrl': imageUrl,
-            'location': GeoPoint(selectedLocation!.latitude, selectedLocation!.longitude), // Store location
+            'location': GeoPoint(selectedLocation!.latitude, selectedLocation!.longitude),
             'createdAt': FieldValue.serverTimestamp(),
           });
 
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ad created successfully')));
-          // Optionally, navigate back or reset the form
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Ad created successfully')));
+          Navigator.of(context).pop();
         } catch (e) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error creating ad: $e')));
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error creating ad: $e')));
         }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Error uploading the image.')));
       }
     }
   }
 
-  // Function to upload the image to Firebase Storage
+
   Future<String?> _uploadImage(File imageFile) async {
     try {
       String fileName = DateTime.now().millisecondsSinceEpoch.toString();
-      TaskSnapshot uploadTask = await FirebaseStorage.instance.ref('ad_images/$fileName').putFile(imageFile);
+      TaskSnapshot uploadTask =
+      await FirebaseStorage.instance.ref('ad_images/$fileName').putFile(imageFile);
       return await uploadTask.ref.getDownloadURL();
     } catch (e) {
       print("Error uploading image: $e");
@@ -93,115 +103,146 @@ class _CreateAdPageState extends State<CreateAdPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF9F9F9), // Soft white background
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        title: const Text(
+          'Create Ad',
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
-        title: const Text('Create Ad'),
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Upload Section
-                GestureDetector(
-                  onTap: _selectImage,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Image Upload Section
+            _buildSection(
+              title: "Upload Item Photo",
+              child: GestureDetector(
+                onTap: _selectImage,
+                child: Container(
+                  height: 180,
+                  width: 400,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5F5F5),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE0E0E0)),
+                  ),
                   child: image == null
-                      ? Container(
-                    width: double.infinity,
-                    height: 200,
-                    color: Colors.grey[200],
-                    child: const Icon(Icons.upload_file, size: 50),
+                      ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.upload, size: 50, color: Colors.black),
+                      SizedBox(height: 8),
+                      Text(
+                        'Tap to Upload',
+                        style: TextStyle(fontSize: 16, color: Colors.black),
+                      ),
+                    ],
                   )
-                      : Image.file(File(image!.path)),
-                ),
-                const SizedBox(height: 16),
-
-                // Post Type (Radio Buttons)
-                Row(
-                  children: [
-                    Radio<String>(
-                      value: 'Lost',
-                      groupValue: postType,
-                      onChanged: (value) {
-                        setState(() {
-                          postType = value;
-                        });
-                      },
+                      : ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.file(
+                      File(image!.path),
+                      fit: BoxFit.cover,
                     ),
-                    const Text('Lost'),
-                    Radio<String>(
-                      value: 'Found',
-                      groupValue: postType,
-                      onChanged: (value) {
-                        setState(() {
-                          postType = value;
-                        });
-                      },
-                    ),
-                    const Text('Found'),
-                  ],
+                  ),
                 ),
-                const SizedBox(height: 16),
+              ),
+            ),
+            const SizedBox(height: 20),
 
-                // Title Input Field
-                TextFormField(
-                  decoration: const InputDecoration(labelText: 'Title'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a title';
-                    }
-                    return null;
-                  },
-                  onSaved: (value) {
-                    title = value;
-                  },
-                ),
-                const SizedBox(height: 16),
-
-                // Description Input Field
-                TextFormField(
-                  maxLines: 5,
-                  decoration: const InputDecoration(labelText: 'Description'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a description';
-                    }
-                    return null;
-                  },
-                  onSaved: (value) {
-                    description = value;
-                  },
-                ),
-                const SizedBox(height: 16),
-
-                // Google Maps Section (Select Location)
-                SizedBox(
-                  height: 250,
+            // Google Maps Section
+            _buildSection(
+              title: "Select Location",
+              child: SizedBox(
+                height: 250,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16.0),
                   child: GoogleMap(
                     initialCameraPosition: const CameraPosition(
                       target: LatLng(5.261832, 103.165598),
                       zoom: 18,
                     ),
                     markers: _markers,
-                    onTap: _onMapTapped, // Set the location on tap
+                    onTap: _onMapTapped,
                   ),
                 ),
-                const SizedBox(height: 16),
-
-                // Submit Button
-                ElevatedButton(
-                  onPressed: _saveAd,
-                  child: const Text('Create Ad'),
-                ),
-              ],
+              ),
             ),
-          ),
+            const SizedBox(height: 20),
+
+            // Title and Description Section
+            _buildSection(
+              title: "Details",
+              child: Column(
+                children: [
+                  TextFormField(
+                    decoration: InputDecoration(
+                      labelText: 'Title',
+                      floatingLabelBehavior: FloatingLabelBehavior.always,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey),
+                      ),
+                    ),
+                    onSaved: (value) => title = value,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    maxLines: 4,
+                    decoration: InputDecoration(
+                      labelText: 'Description',
+                      floatingLabelBehavior: FloatingLabelBehavior.always,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey),
+                      ),
+                    ),
+                    onSaved: (value) => description = value,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Floating Action Button
+            ElevatedButton(
+              onPressed: _saveAd,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4CAF50), // Green
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: const Text(
+                'Create Ad',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSection({required String title, required Widget child}) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+      color: Color.fromRGBO(231, 231, 231, 1.0),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            const SizedBox(height: 12),
+            child,
+          ],
         ),
       ),
     );
