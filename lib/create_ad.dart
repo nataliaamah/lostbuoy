@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert';
 import 'dart:io';
+import 'package:image/image.dart' as img;
 
 class CreateAdPage extends StatefulWidget {
   @override
@@ -49,14 +50,32 @@ class _CreateAdPageState extends State<CreateAdPage> {
     });
   }
 
+  Future<String> _compressAndEncodeImage(File imageFile) async {
+    try {
+      // Read image bytes
+      final imageBytes = await imageFile.readAsBytes();
+
+      // Decode the image
+      final decodedImage = img.decodeImage(imageBytes);
+      if (decodedImage == null) throw Exception('Error decoding image');
+
+      // Resize the image (e.g., max width = 500px while maintaining aspect ratio)
+      final resizedImage = img.copyResize(decodedImage, width: 500);
+
+      // Compress the image and encode to Base64
+      final compressedBytes = img.encodeJpg(resizedImage, quality: 75); // Adjust quality (0-100)
+      return base64Encode(compressedBytes);
+    } catch (e) {
+      throw Exception('Error compressing image: $e');
+    }
+  }
+
   // Function to save ad to Firestore
   Future<void> _saveAd() async {
     if (!_formKey.currentState!.validate()) {
-      return; // If validation fails, exit the function
+      // Validate all fields
+      return;
     }
-
-    // Save form fields
-    _formKey.currentState!.save();
 
     // Check if image is selected
     if (image == null) {
@@ -75,15 +94,15 @@ class _CreateAdPageState extends State<CreateAdPage> {
     }
 
     try {
-      final bytes = await File(image!.path).readAsBytes();
-      final base64Image = base64Encode(bytes);
+      // Compress and encode image to Base64
+      final base64Image = await _compressAndEncodeImage(File(image!.path));
 
-      // Save to Firestore
+      // Save ad to Firestore
       await FirebaseFirestore.instance.collection('ads').add({
         'title': title,
         'description': description,
         'postType': postType,
-        'imageBase64': base64Image,
+        'imageBase64': base64Image, // Use compressed Base64 string
         'location': GeoPoint(selectedLocation!.latitude, selectedLocation!.longitude),
         'createdAt': FieldValue.serverTimestamp(),
       });
@@ -102,9 +121,11 @@ class _CreateAdPageState extends State<CreateAdPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xFFFFFFFF),
       appBar: AppBar(
-        title: const Text('Create Ad', style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
+        title: const Text('Create Ad', style: TextStyle(color: Colors.black),),
+        centerTitle: true,
+        backgroundColor: Color(0xFFFFFFFF),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
       ),
@@ -120,18 +141,20 @@ class _CreateAdPageState extends State<CreateAdPage> {
                   onTap: _selectImage,
                   child: Container(
                     height: 180,
+                    width: 400,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF5F5F5),
+                      color: Color.fromRGBO(255, 255, 255, 1.0),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFE0E0E0)),
+                      border: Border.all(color: Color.fromRGBO(
+                          255, 255, 255, 1.0)),
                     ),
                     child: image == null
-                        ? Column(
+                        ? const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.upload, size: 50),
+                      children: [
+                        Icon(Icons.upload, size: 50, color: Colors.black),
                         SizedBox(height: 8),
-                        Text('Tap to upload'),
+                        Text('Tap to upload', style: TextStyle(color: Colors.black),),
                       ],
                     )
                         : Image.file(
@@ -141,7 +164,7 @@ class _CreateAdPageState extends State<CreateAdPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+
               _buildSection(
                 title: "Post Type",
                 child: DropdownButtonFormField<String>(
@@ -162,7 +185,7 @@ class _CreateAdPageState extends State<CreateAdPage> {
                   },
                 ),
               ),
-              const SizedBox(height: 20),
+
               _buildSection(
                 title: "Details",
                 child: Column(
@@ -179,7 +202,7 @@ class _CreateAdPageState extends State<CreateAdPage> {
                         title = value;
                       },
                     ),
-                    const SizedBox(height: 16),
+
                     TextFormField(
                       maxLines: 3,
                       decoration: InputDecoration(labelText: 'Description'),
@@ -196,26 +219,54 @@ class _CreateAdPageState extends State<CreateAdPage> {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+
               _buildSection(
                 title: "Location",
                 child: SizedBox(
                   height: 250,
-                  child: GoogleMap(
-                    initialCameraPosition: const CameraPosition(
-                      target: LatLng(5.261832, 103.165598),
-                      zoom: 18,
+                  child: GestureDetector(
+                    onVerticalDragUpdate: (_) {}, // Prevent gesture conflicts
+                    child: GoogleMap(
+                      initialCameraPosition: const CameraPosition(
+                        target: LatLng(5.261832, 103.165598),
+                        zoom: 18.5,
+                      ),
+                      markers: _markers,
+                      onTap: _onMapTapped,
+                      scrollGesturesEnabled: true, // Allow scrolling gestures
+                      zoomControlsEnabled: true, // Show zoom controls
+                      zoomGesturesEnabled: true, // Allow zoom gestures
+                      myLocationEnabled: false,
+                      myLocationButtonEnabled: false,
                     ),
-                    markers: _markers,
-                    onTap: _onMapTapped,
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
-              ElevatedButton(
+
+
+              ElevatedButton.icon(
                 onPressed: _saveAd,
-                child: const Text('Create Ad'),
+                label: const Text(
+                  'Create Ad',
+                  style: TextStyle(
+                    fontSize: 18, // Make the text slightly larger
+                    fontWeight: FontWeight.bold, // Emphasize the text
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color.fromRGBO(103, 51, 152, 1.0), // Custom background color
+                  foregroundColor: Colors.white, // Text and icon color
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15), // Rounded corners
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 14.0, // Increase padding for a larger button
+                    horizontal: 24.0,
+                  ),
+                  elevation: 5, // Add a shadow for depth
+                ),
               ),
+
             ],
           ),
         ),
@@ -225,13 +276,15 @@ class _CreateAdPageState extends State<CreateAdPage> {
 
   Widget _buildSection({required String title, required Widget child}) {
     return Card(
+      color: Color(0xFFF1F1F1),
+      elevation: 5,
       margin: const EdgeInsets.only(bottom: 20),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 15)),
             const SizedBox(height: 10),
             child,
           ],

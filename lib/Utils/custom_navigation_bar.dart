@@ -9,7 +9,7 @@ class CustomNavigationBar extends StatelessWidget {
     return Container(
       height: 60,
       decoration: const BoxDecoration(
-        color: Color(0xFF8B5DFF),
+        color: Color(0xFF673398),
         boxShadow: [
           BoxShadow(
             color: Colors.black12,
@@ -64,25 +64,19 @@ class CustomNavigationBar extends StatelessWidget {
               width: 90, // Increase the width
               height: 90, // Increase the height
               decoration: const BoxDecoration(
-                color: Color(0xFF8B5DFF), // The background color of the circle
+                color: Color(0xFF673398), // The background color of the circle
                 shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 0,
-                  ),
-                ],
               ),
               child: Center(
                 child: Container(
                   width: 70, // Adjust inner blue button width
                   height: 70, // Adjust inner blue button height
                   decoration: const BoxDecoration(
-                    color: Colors.white,
+                    color: Color.fromRGBO(255, 249, 215, 1.0),
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
-                    icon: const Icon(Icons.add, color: Color(0xFF8B5DFF),),
+                    icon: const Icon(Icons.add, color: Color(0xFF673398),),
                     iconSize: 35,
                     onPressed: () {
                       // Navigate to the CreateAdPage
@@ -106,7 +100,7 @@ class NavBarPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final Paint paint = Paint()
-      ..color = const Color(0xFF8B5DFF)
+      ..color = const Color(0xFF673398)
       ..style = PaintingStyle.fill;
 
     final Path path = Path();
