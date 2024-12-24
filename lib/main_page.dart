@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:lostbuoy/Utils/map_style.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:convert';
 import 'package:lostbuoy/Utils/custom_navigation_bar.dart';
+
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -16,11 +18,51 @@ class _MainPageState extends State<MainPage> {
   // Center of UiTM campus
   final LatLng _center = const LatLng(5.261832, 103.165598);
 
-  // UiTM campus boundaries with tighter limits
+  // UiTM campus boundaries
   final LatLngBounds _uitmBounds = LatLngBounds(
-    southwest: const LatLng(5.2605, 103.1645), // Slightly reduced boundary
+    southwest: const LatLng(5.2605, 103.1645),
     northeast: const LatLng(5.2630, 103.1667),
   );
+
+  final Map<MarkerId, Marker> _markers = {};
+  Map<String, dynamic>? _selectedAd;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchMarkers();
+  }
+
+  void _fetchMarkers() async {
+    final ads = await FirebaseFirestore.instance.collection('ads').get();
+
+    setState(() {
+      for (var ad in ads.docs) {
+        final data = ad.data();
+        final markerId = MarkerId(ad.id);
+        final LatLng position = LatLng(
+          data['location'].latitude,
+          data['location'].longitude,
+        );
+
+        // Determine marker color/icon based on post type
+        final BitmapDescriptor markerIcon = data['postType'] == 'Lost'
+            ? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed)
+            : BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue);
+
+        _markers[markerId] = Marker(
+          markerId: markerId,
+          position: position,
+          icon: markerIcon,
+          onTap: () {
+            setState(() {
+              _selectedAd = data;
+            });
+          },
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,29 +72,68 @@ class _MainPageState extends State<MainPage> {
           GoogleMap(
             onMapCreated: (controller) async {
               _mapController = controller;
-
-              // Move the camera to focus tightly within UiTM's boundaries
               await _mapController.moveCamera(
-                CameraUpdate.newLatLngBounds(_uitmBounds, 25), // Reduced padding to tighten view
+                CameraUpdate.newLatLngBounds(_uitmBounds, 25),
               );
-
-              // Apply custom map style
-              _mapController.setMapStyle(mapStyle);
             },
             initialCameraPosition: CameraPosition(
-              target: _center, // Center of UiTM
-              zoom: 18.5, // Start closer for better detail
+              target: _center,
+              zoom: 18.5,
             ),
-            mapType: MapType.normal,
-            minMaxZoomPreference: const MinMaxZoomPreference(18.5, 22), // Focus on zooming in, restrict zooming out
-            cameraTargetBounds: CameraTargetBounds(_uitmBounds), // Constrain camera movement to UiTM bounds
+            markers: Set<Marker>.of(_markers.values),
+            cameraTargetBounds: CameraTargetBounds(_uitmBounds),
             myLocationEnabled: false,
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
           ),
+          if (_selectedAd != null) _buildAdPopup(),
         ],
       ),
       bottomNavigationBar: const CustomNavigationBar(),
+    );
+  }
+
+  Widget _buildAdPopup() {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Card(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: ListTile(
+            leading: Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                image: DecorationImage(
+                  image: MemoryImage(
+                    base64Decode(_selectedAd!['imageBase64']),
+                  ),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            title: Text(
+              _selectedAd!['title'] ?? 'No Title',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(
+              _selectedAd!['description'] ?? 'No Description',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () {
+                setState(() {
+                  _selectedAd = null;
+                });
+              },
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
