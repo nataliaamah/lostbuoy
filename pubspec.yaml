@@ -63,7 +63,10 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
-
+  assets:
+      - lib/asset/placeholder1.png
+      - lib/asset/placeholder2.png
+      - lib/asset/placeholder3.png
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
