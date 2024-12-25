@@ -42,16 +42,16 @@ dependencies:
   permission_handler: ^11.3.1
   image: ^4.5.2
 
+  firebase_core: any
+  flutter_vector_icons: ^2.0.0
+  google_sign_in: ^6.2.2
+  firebase_auth: ^5.3.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
-  # The "flutter_lints" package below contains a set of recommended lints to
-  # encourage good coding practices. The lint set provided by the package is
-  # activated in the `analysis_options.yaml` file located at the root of your
-  # package. See that file for information about deactivating specific lint
-  # rules and activating additional ones.
   flutter_lints: ^4.0.0
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -67,6 +67,13 @@ flutter:
       - lib/asset/placeholder1.png
       - lib/asset/placeholder2.png
       - lib/asset/placeholder3.png
+      - lib/asset/app_icon_1.png
+      - lib/asset/app_icon_2.png
+      - lib/asset/app_icon_3.png
+      - lib/asset/app_icon_1_trans.png
+      - lib/asset/app_icon_2_trans.png
+      - lib/asset/app_icon_3_trans.png
+      - lib/asset/google_logo.png
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

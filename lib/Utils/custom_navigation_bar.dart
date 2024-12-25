@@ -7,9 +7,9 @@ class CustomNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 60,
+      height: 65,
       decoration: const BoxDecoration(
-        color: Color(0xFF673398),
+        color: Color(0xFFFFFFFF),
         boxShadow: [
           BoxShadow(
             color: Colors.black12,
@@ -26,63 +26,63 @@ class CustomNavigationBar extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.home_filled),
-                  iconSize: 30,
+                  icon: const Icon(Icons.home_rounded),
+                  iconSize: 27,
                   onPressed: () {
                     // Handle home button press
                   },
-                  color: Colors.white,
+                  color: Colors.black87,
                 ),
                 IconButton(
                   icon: const Icon(Icons.notifications),
-                  iconSize: 30,
+                  iconSize: 27,
                   onPressed: () {
                     // Handle notifications button press
                   },
-                  color: Colors.white,
+                  color: Colors.black87,
                 ),
                 IconButton(
                   icon: const Icon(
-                    Icons.person, // Profile icon
-                    size: 30, // Icon size (adjust as needed)
+                    Icons.person_rounded, // Profile icon
+                    size: 27, // Icon size (adjust as needed)
                   ),
-                  color: Colors.white,
+                  color: Colors.black87,
                   onPressed: () {
                     // Handle profile button press
                   },
                 ),
-                const SizedBox(width: 50), // Spacer for the floating action button
+                const SizedBox(width: 40), // Spacer for the floating action button
               ],
             ),
           ),
 
           // Floating Action Button styled as the '+', placed at the far right
           Positioned(
-            bottom: 15, // Adjust to position the circle further down if needed
+            bottom: 5, // Adjust to position the circle further down if needed
             right: 15,  // Shift it a little to the left for alignment
             child: Container(
-              width: 90, // Increase the width
-              height: 90, // Increase the height
+              width: 80, // Increase the width
+              height: 80, // Increase the height
               decoration: const BoxDecoration(
-                color: Color(0xFF673398), // The background color of the circle
+                color: Color(0xFFFFFFFF), // The background color of the circle
                 shape: BoxShape.circle,
               ),
               child: Center(
                 child: Container(
-                  width: 70, // Adjust inner blue button width
-                  height: 70, // Adjust inner blue button height
+                  width: 60, // Adjust inner blue button width
+                  height: 60, // Adjust inner blue button height
                   decoration: const BoxDecoration(
-                    color: Color.fromRGBO(255, 249, 215, 1.0),
+                    color: Colors.black87,
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
-                    icon: const Icon(Icons.add, color: Color(0xFF673398),),
+                    icon: const Icon(Icons.add, color: Color.fromRGBO(255, 249, 215, 1.0)),
                     iconSize: 35,
                     onPressed: () {
                       // Navigate to the CreateAdPage
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => CreateAdPage()),
+                        MaterialPageRoute(builder: (context) => const CreateAdPage()),
                       );
                     },
                   ),
@@ -100,7 +100,7 @@ class NavBarPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final Paint paint = Paint()
-      ..color = const Color(0xFF673398)
+      ..color = const Color(0xFFFFFFFF)
       ..style = PaintingStyle.fill;
 
     final Path path = Path();

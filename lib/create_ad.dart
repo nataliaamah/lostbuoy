@@ -7,6 +7,8 @@ import 'dart:io';
 import 'package:image/image.dart' as img;
 
 class CreateAdPage extends StatefulWidget {
+  const CreateAdPage({super.key});
+
   @override
   State<CreateAdPage> createState() => _CreateAdPageState();
 }
@@ -121,11 +123,11 @@ class _CreateAdPageState extends State<CreateAdPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFFFFFFF),
+      backgroundColor: const Color(0xFFFFFFFF),
       appBar: AppBar(
         title: const Text('Create Ad', style: TextStyle(color: Colors.black),),
         centerTitle: true,
-        backgroundColor: Color(0xFFFFFFFF),
+        backgroundColor: const Color(0xFFFFFFFF),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
       ),
@@ -143,9 +145,9 @@ class _CreateAdPageState extends State<CreateAdPage> {
                     height: 180,
                     width: 400,
                     decoration: BoxDecoration(
-                      color: Color.fromRGBO(255, 255, 255, 1.0),
+                      color: const Color.fromRGBO(255, 255, 255, 1.0),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Color.fromRGBO(
+                      border: Border.all(color: const Color.fromRGBO(
                           255, 255, 255, 1.0)),
                     ),
                     child: image == null
@@ -191,7 +193,7 @@ class _CreateAdPageState extends State<CreateAdPage> {
                 child: Column(
                   children: [
                     TextFormField(
-                      decoration: InputDecoration(labelText: 'Title'),
+                      decoration: const InputDecoration(labelText: 'Title'),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return 'Please provide a title.';
@@ -205,7 +207,7 @@ class _CreateAdPageState extends State<CreateAdPage> {
 
                     TextFormField(
                       maxLines: 3,
-                      decoration: InputDecoration(labelText: 'Description'),
+                      decoration: const InputDecoration(labelText: 'Description'),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return 'Please provide a description.';
@@ -254,7 +256,7 @@ class _CreateAdPageState extends State<CreateAdPage> {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color.fromRGBO(103, 51, 152, 1.0), // Custom background color
+                  backgroundColor: const Color.fromRGBO(103, 51, 152, 1.0), // Custom background color
                   foregroundColor: Colors.white, // Text and icon color
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15), // Rounded corners
@@ -276,7 +278,7 @@ class _CreateAdPageState extends State<CreateAdPage> {
 
   Widget _buildSection({required String title, required Widget child}) {
     return Card(
-      color: Color(0xFFF1F1F1),
+      color: const Color(0xFFF1F1F1),
       elevation: 5,
       margin: const EdgeInsets.only(bottom: 20),
       child: Padding(

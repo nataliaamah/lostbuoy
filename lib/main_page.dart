@@ -102,7 +102,7 @@ class _MainPageState extends State<MainPage> {
         padding: const EdgeInsets.all(16.0),
         child: Card(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          color: Color.fromRGBO(255, 251, 238, 1.0),
+          color: const Color.fromRGBO(255, 251, 238, 1.0),
           child: ListTile(
             leading: Container(
               width: 60,
