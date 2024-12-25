@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert';
 import 'package:lostbuoy/Utils/custom_navigation_bar.dart';
 import 'package:lostbuoy/Utils/map_style.dart'; // Import the map style
+import 'dart:ui' as ui;
+import 'package:flutter/services.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -27,10 +29,36 @@ class _MainPageState extends State<MainPage> {
   final Map<MarkerId, Marker> _markers = {};
   Map<String, dynamic>? _selectedAd;
 
+  BitmapDescriptor? lostMarkerIcon;
+  BitmapDescriptor? foundMarkerIcon;
+
   @override
   void initState() {
     super.initState();
-    _listenToAdUpdates();
+    _loadCustomMarkerIcons().then((_) => _listenToAdUpdates());
+  }
+
+  Future<BitmapDescriptor> _resizeAndCreateMarker(String assetPath, int width) async {
+    ByteData data = await rootBundle.load(assetPath);
+    ui.Codec codec = await ui.instantiateImageCodec(
+      data.buffer.asUint8List(),
+      targetWidth: width, // Adjust width to control size
+    );
+    ui.FrameInfo frameInfo = await codec.getNextFrame();
+    final ByteData? resizedData =
+    await frameInfo.image.toByteData(format: ui.ImageByteFormat.png);
+    return BitmapDescriptor.fromBytes(resizedData!.buffer.asUint8List());
+  }
+
+  Future<void> _loadCustomMarkerIcons() async {
+    lostMarkerIcon = await _resizeAndCreateMarker(
+      'lib/asset/lost_marker.png',
+      100, // Adjust marker size here
+    );
+    foundMarkerIcon = await _resizeAndCreateMarker(
+      'lib/asset/found_marker.png',
+      100, // Adjust marker size here
+    );
   }
 
   void _listenToAdUpdates() {
@@ -45,15 +73,15 @@ class _MainPageState extends State<MainPage> {
             data['location'].longitude,
           );
 
-          // Determine marker color based on post type
-          final BitmapDescriptor markerColor = data['postType'] == 'Lost'
-              ? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRose)
-              : BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure);
+          // Choose the appropriate icon based on post type
+          final BitmapDescriptor markerIcon = data['postType'] == 'Lost'
+              ? lostMarkerIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRose)
+              : foundMarkerIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure);
 
           _markers[markerId] = Marker(
             markerId: markerId,
             position: position,
-            icon: markerColor,
+            icon: markerIcon,
             onTap: () {
               setState(() {
                 _selectedAd = data;
