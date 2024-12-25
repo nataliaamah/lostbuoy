@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lostbuoy/Utils/custom_navigation_bar.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -6,6 +7,12 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final User? user = FirebaseAuth.instance.currentUser;
+    final String displayName = user?.displayName ?? 'Unknown User';
+    final String email = user?.email ?? 'No Email';
+    final String matricNumber =
+    email.contains('@') ? email.split('@')[0] : 'Unknown';
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -66,18 +73,18 @@ class ProfilePage extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 20),
-              const Text(
-                'Syafiq Aiman',
-                style: TextStyle(
+              Text(
+                displayName,
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
                 ),
               ),
               const SizedBox(height: 5),
-              const Text(
-                '2021495608',
-                style: TextStyle(
+              Text(
+                matricNumber,
+                style: const TextStyle(
                   fontSize: 16,
                   color: Colors.grey,
                 ),

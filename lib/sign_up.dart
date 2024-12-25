@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'main_page.dart'; // Ensure this points to your MainPage implementation
 
 class SignUpPage extends StatelessWidget {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
@@ -25,9 +26,10 @@ class SignUpPage extends StatelessWidget {
         if (user != null) {
           final String email = user.email!;
           if (email.endsWith('@student.uitm.edu.my')) {
-            // Proceed with sign-up
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Welcome, ${user.displayName}!')),
+            // Navigate to the main page after successful sign-up
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const MainPage()),
             );
           } else {
             // Sign out and show an error if the email domain is not allowed

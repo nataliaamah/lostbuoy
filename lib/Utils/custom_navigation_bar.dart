@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lostbuoy/create_ad.dart';
 import 'package:lostbuoy/profilepage.dart';
 import 'package:lostbuoy/main_page.dart';
+import 'package:lostbuoy/notifications.dart';
 
 class CustomNavigationBar extends StatelessWidget {
   const CustomNavigationBar({super.key});
@@ -42,7 +43,10 @@ class CustomNavigationBar extends StatelessWidget {
                   icon: const Icon(Icons.notifications),
                   iconSize: 27,
                   onPressed: () {
-                    // Handle notifications button press
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => NotificationPage()), // Change to the main page
+                    );
                   },
                   color: Colors.black87,
                 ),
