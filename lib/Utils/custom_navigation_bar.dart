@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lostbuoy/create_ad.dart';
+import 'package:lostbuoy/profilepage.dart';
+import 'package:lostbuoy/main_page.dart';
 
 class CustomNavigationBar extends StatelessWidget {
   const CustomNavigationBar({super.key});
@@ -29,7 +31,10 @@ class CustomNavigationBar extends StatelessWidget {
                   icon: const Icon(Icons.home_rounded),
                   iconSize: 27,
                   onPressed: () {
-                    // Handle home button press
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => MainPage()), // Change to the main page
+                    );
                   },
                   color: Colors.black87,
                 ),
@@ -48,7 +53,10 @@ class CustomNavigationBar extends StatelessWidget {
                   ),
                   color: Colors.black87,
                   onPressed: () {
-                    // Handle profile button press
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => ProfilePage()), // Change to the main page
+                    );
                   },
                 ),
                 const SizedBox(width: 40), // Spacer for the floating action button

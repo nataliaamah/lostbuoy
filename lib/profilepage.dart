@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lostbuoy/Utils/custom_navigation_bar.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -14,13 +15,12 @@ class ProfilePage extends StatelessWidget {
       backgroundColor: Colors.white,
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0), // Add padding for horizontal spacing
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start, // Align content to the top
-            crossAxisAlignment: CrossAxisAlignment.center, // Align content horizontally
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 60), // Add space at the top
-              // Profile Title
+              const SizedBox(height: 60),
               const Text(
                 'Profile',
                 style: TextStyle(
@@ -29,8 +29,7 @@ class ProfilePage extends StatelessWidget {
                   color: Colors.black,
                 ),
               ),
-              const SizedBox(height: 30), // Add space after the title
-              // Profile Picture with Camera Icon
+              const SizedBox(height: 30),
               Stack(
                 children: [
                   CircleAvatar(
@@ -66,8 +65,7 @@ class ProfilePage extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 20), // Add space below the profile picture
-              // Name and ID
+              const SizedBox(height: 20),
               const Text(
                 'Syafiq Aiman',
                 style: TextStyle(
@@ -84,8 +82,7 @@ class ProfilePage extends StatelessWidget {
                   color: Colors.grey,
                 ),
               ),
-              const SizedBox(height: 40), // Add space before the button
-              // View My Posts Button
+              const SizedBox(height: 40),
               ElevatedButton.icon(
                 onPressed: () {
                   // Navigate to the user's posts
@@ -111,7 +108,7 @@ class ProfilePage extends StatelessWidget {
           ),
         ),
       ),
-
+      bottomNavigationBar: const CustomNavigationBar(), // Add your custom navigation bar
     );
   }
 }
