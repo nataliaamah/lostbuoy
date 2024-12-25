@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'main_page.dart'; // Ensure this points to your MainPage implementation
+import 'main_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignUpPage extends StatelessWidget {
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: ['email'],
+  );
 
   SignUpPage({Key? key}) : super(key: key);
 
+
   Future<void> _signInWithGoogle(BuildContext context) async {
     try {
+      // Force user to choose a Google account
+      await _googleSignIn.signOut();
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser != null) {
         final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
@@ -26,6 +32,10 @@ class SignUpPage extends StatelessWidget {
         if (user != null) {
           final String email = user.email!;
           if (email.endsWith('@student.uitm.edu.my')) {
+            // Save login status using SharedPreferences
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setBool('isLoggedIn', true);
+
             // Navigate to the main page after successful sign-up
             Navigator.pushReplacement(
               context,
@@ -48,6 +58,7 @@ class SignUpPage extends StatelessWidget {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -60,7 +71,7 @@ class SignUpPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Image.asset(
-                "lib/asset/app_icon_3_trans.png", // Your logo
+                "lib/asset/app_icon_3_trans.png",
                 height: 200,
               ),
               const Text(
@@ -94,7 +105,7 @@ class SignUpPage extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Image.asset(
-                      'lib/asset/google_logo.png', // Add the Google logo image here
+                      'lib/asset/google_logo.png',
                       height: 24,
                     ),
                     const SizedBox(width: 10),

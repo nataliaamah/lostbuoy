@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'sign_up.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -14,14 +15,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<Map<String, String>> onboardingData = [
     {
-      'image': 'lib/asset/placeholder1.png', // Replace with actual image paths
+      'image': 'lib/asset/placeholder1.png',
       'title': 'Lost Something?',
-      'description': "Ever lost your keys, phone, or wallet on campus? It's a frustrating experience."
+      'description': 'Ever lost your keys, phone, or wallet on campus?'
     },
     {
       'image': 'lib/asset/placeholder2.png',
       'title': 'Find Your Belongings, Fast!',
-      'description': 'LostBuoy helps you find your lost items quickly and easily.'
+      'description': 'LostBuoy helps you find your lost items quickly.'
     },
     {
       'image': 'lib/asset/placeholder3.png',
@@ -29,6 +30,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       'description': 'Let’s help your fellow students!'
     },
   ];
+
+  Future<void> _completeOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('seenOnboarding', true); // Save onboarding status
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => SignUpPage()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,38 +76,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 40.0),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center, // Center everything vertically
-        crossAxisAlignment: CrossAxisAlignment.center, // Align text and images to the center
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.asset(
-            image,
-            fit: BoxFit.contain,
-            height: 300, // You can adjust this height as needed
-            width: 400,
-          ),
-          Text(
-            title,
-            textAlign: TextAlign.center, // Ensure the title is centered
-            style: const TextStyle(
-              fontSize: 24.0,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-          ),
+          Image.asset(image, height: 300, width: 400),
+          const SizedBox(height: 20),
+          Text(title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           const SizedBox(height: 10),
-          Text(
-            description,
-            textAlign: TextAlign.center, // Ensure the description is centered
-            style: const TextStyle(
-              fontSize: 16.0,
-              color: Colors.black54,
-            ),
-          ),
+          Text(description, textAlign: TextAlign.center, style: const TextStyle(fontSize: 16, color: Colors.black54)),
         ],
       ),
     );
   }
-
 
   Widget _buildScrollIndicator() {
     return Positioned(
@@ -134,61 +123,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           _currentPage > 0
               ? TextButton(
             onPressed: () {
-              _pageController.previousPage(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-              );
+              _pageController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
             },
-            child: const Text(
-              "Back",
-              style: TextStyle(
-                fontSize: 16,
-                color: Color(0xFF673398),
-              ),
-            ),
+            child: const Text("Back", style: TextStyle(fontSize: 16, color: Color(0xFF673398))),
           )
-              : TextButton(
-            onPressed: () {
-              Navigator.pop(context); // Navigate to previous screen
-            },
-            child: const Text(
-              "Skip",
-              style: TextStyle(
-                fontSize: 16,
-                color: Color(0xFF673398),
-              ),
-            ),
-          ),
+              : const SizedBox.shrink(),
           _currentPage < onboardingData.length - 1
               ? TextButton(
             onPressed: () {
-              _pageController.nextPage(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-              );
+              _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
             },
-            child: const Text(
-              "Next",
-              style: TextStyle(
-                fontSize: 16,
-                color: Color(0xFF673398),
-              ),
-            ),
+            child: const Text("Next", style: TextStyle(fontSize: 16, color: Color(0xFF673398))),
           )
               : TextButton(
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => SignUpPage()), // Change to the main page
-              );
-            },
-            child: const Text(
-              "Done",
-              style: TextStyle(
-                fontSize: 16,
-                color: Color(0xFF673398),
-              ),
-            ),
+            onPressed: _completeOnboarding,
+            child: const Text("Done", style: TextStyle(fontSize: 16, color: Color(0xFF673398))),
           ),
         ],
       ),
