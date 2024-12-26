@@ -38,7 +38,7 @@ class CustomNavigationBar extends StatelessWidget {
                       MaterialPageRoute(builder: (_) => MainPage()), // Main page
                     );
                   },
-                  color: Colors.black87,
+                  color: Color.fromRGBO(36, 95, 117, 1),
                 ),
                 // Floating '+' Button Spacer
                 const SizedBox(width: 10), // Empty space for the floating button
@@ -48,7 +48,7 @@ class CustomNavigationBar extends StatelessWidget {
                     Icons.person_rounded, // Profile icon
                     size: 30,
                   ),
-                  color: Colors.black87,
+                  color: Color.fromRGBO(36, 95, 117, 1),
                   onPressed: () {
                     Navigator.pushReplacement(
                       context,
@@ -59,14 +59,13 @@ class CustomNavigationBar extends StatelessWidget {
               ],
             ),
           ),
-
           // Positioned Floating '+' Button
           Positioned(
-            bottom: 20, // Adjust this value to control vertical positioning
+            bottom: 10, // Adjust this value to control vertical positioning
             left: MediaQuery.of(context).size.width / 2 - 40, // Center horizontally
             child: Container(
-              width: 80,
-              height: 80,
+              width: 85,
+              height: 85,
               decoration: const BoxDecoration(
                 color: Color(0xFFFFFFFF), // Background color of the circle
                 shape: BoxShape.circle,
@@ -76,13 +75,13 @@ class CustomNavigationBar extends StatelessWidget {
                   width: 65, // Inner button width
                   height: 65, // Inner button height
                   decoration: const BoxDecoration(
-                    color: Colors.black87, // Inner button color
+                    color: Color.fromRGBO(36, 95, 117, 1), // Inner button color
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
                     icon: const Icon(
                       Icons.add,
-                      color: Color.fromRGBO(255, 249, 215, 1.0),
+                      color: Color.fromRGBO(229, 64, 19, 1.0),
                     ),
                     iconSize: 30,
                     onPressed: () {

@@ -141,6 +141,7 @@ class _ViewAdPageState extends State<ViewAdPage> {
           ),
 
           // Ad content
+          // Ad content
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -149,8 +150,7 @@ class _ViewAdPageState extends State<ViewAdPage> {
                 children: [
                   // Post Type
                   Container(
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: widget.adData['postType'] == 'Found'
                           ? Colors.green[100]
@@ -180,32 +180,30 @@ class _ViewAdPageState extends State<ViewAdPage> {
                   const SizedBox(height: 10),
 
                   // Date and Time
-                  Row(
-                    children: [
-                      const Icon(Icons.calendar_today,
-                          size: 20, color: Colors.grey),
-                      const SizedBox(width: 5),
-                      Text(
-                        DateFormat('EEE, MMM d, yyyy').format(
-                          (widget.adData['createdAt'] as Timestamp).toDate(),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: double.infinity),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.calendar_today, size: 20, color: Colors.grey),
+                        const SizedBox(width: 5),
+                        Text(
+                          DateFormat('EEE, MMM d, yyyy').format(
+                            (widget.adData['createdAt'] as Timestamp).toDate(),
+                          ),
+                          style: const TextStyle(fontSize: 14, color: Colors.grey),
                         ),
-                        style: const TextStyle(fontSize: 14, color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 5),
-                  Row(
-                    children: [
-                      const Icon(Icons.access_time,
-                          size: 20, color: Colors.grey),
-                      const SizedBox(width: 5),
-                      Text(
-                        DateFormat('h:mm a').format(
-                          (widget.adData['createdAt'] as Timestamp).toDate(),
+                        const SizedBox(width: 16),
+                        const Icon(Icons.access_time, size: 20, color: Colors.grey),
+                        const SizedBox(width: 5),
+                        Text(
+                          DateFormat('h:mm a').format(
+                            (widget.adData['createdAt'] as Timestamp).toDate(),
+                          ),
+                          style: const TextStyle(fontSize: 14, color: Colors.grey),
                         ),
-                        style: const TextStyle(fontSize: 14, color: Colors.grey),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 16),
 
@@ -233,74 +231,72 @@ class _ViewAdPageState extends State<ViewAdPage> {
                     ),
                     child: GoogleMap(
                       initialCameraPosition: CameraPosition(
-                        target: adLocation,
+                        target: LatLng(
+                          widget.adData['location'].latitude,
+                          widget.adData['location'].longitude,
+                        ),
                         zoom: 16,
                       ),
                       markers: {
                         Marker(
                           markerId: const MarkerId('adLocation'),
-                          position: adLocation,
+                          position: LatLng(
+                            widget.adData['location'].latitude,
+                            widget.adData['location'].longitude,
+                          ),
                         ),
                       },
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   const Divider(),
-
+                  const SizedBox(height: 20),
                   // Contact Information
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const CircleAvatar(
+                      CircleAvatar(
                         radius: 30,
-                        backgroundColor: Colors.grey,
-                        child: Icon(Icons.person, size: 30, color: Colors.white),
+                        backgroundColor: Colors.grey[300],
+                        child: const Icon(Icons.person, size: 30, color: Colors.white),
                       ),
                       const SizedBox(width: 16),
-                      Row(
-                        children: [
-                          const CircleAvatar(
-                            radius: 30,
-                            backgroundColor: Colors.grey,
-                            child: Icon(Icons.person, size: 30, color: Colors.white),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  creatorName, // Displays the creator's name
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  phoneNumber, // Displays the creator's phone number
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ],
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              creatorName,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                          CircleAvatar(
-                            radius: 25,
-                            backgroundColor: Colors.green,
-                            child: IconButton(
-                              icon: const FaIcon(FontAwesomeIcons.whatsapp,
-                                  color: Colors.white),
-                              onPressed: () {
-                                final whatsappUrl = 'https://wa.me/$phoneNumber';
-                                launchUrl(Uri.parse(whatsappUrl)); // Opens WhatsApp with the number
-                              },
+                            const SizedBox(height: 4),
+                            Text(
+                              phoneNumber,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
+                      ),
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundColor: Colors.green,
+                        child: IconButton(
+                          icon: const FaIcon(FontAwesomeIcons.whatsapp,
+                              color: Colors.white),
+                          onPressed: () {
+                            final whatsappUrl = 'https://wa.me/$phoneNumber';
+                            launchUrl(Uri.parse(whatsappUrl));
+                          },
+                        ),
                       ),
                     ],
                   ),
@@ -310,13 +306,10 @@ class _ViewAdPageState extends State<ViewAdPage> {
                   Center(
                     child: ElevatedButton(
                       onPressed: () => handleAction(
-                        widget.adData['postType'] == 'Found'
-                            ? 'claim'
-                            : 'return',
+                        widget.adData['postType'] == 'Found' ? 'claim' : 'return',
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: widget.adData['createdBy'] ==
-                            currentUser?.uid
+                        backgroundColor: widget.adData['createdBy'] == currentUser?.uid
                             ? Colors.redAccent
                             : Colors.indigo,
                         padding: const EdgeInsets.symmetric(
@@ -333,8 +326,7 @@ class _ViewAdPageState extends State<ViewAdPage> {
                             : (widget.adData['postType'] == 'Found'
                             ? 'Claim Item'
                             : 'Return Item'),
-                        style:
-                        const TextStyle(fontSize: 16, color: Colors.white),
+                        style: const TextStyle(fontSize: 16, color: Colors.white),
                       ),
                     ),
                   ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lostbuoy/Utils/custom_navigation_bar.dart';
 import 'sign_in.dart';
+import 'view_my_ad.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -35,7 +36,7 @@ class ProfilePage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              const SizedBox(height: 60),
+              const SizedBox(height: 30),
               const Text(
                 'Profile',
                 style: TextStyle(
@@ -88,15 +89,20 @@ class ProfilePage extends StatelessWidget {
               // View My Posts Button
               ElevatedButton.icon(
                 onPressed: () {
-                  // Navigate to the user's posts
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ViewMyAdsPage(),
+                    ),
+                  );
                 },
                 icon: const Icon(Icons.article),
                 label: const Text(
-                  'View My Posts',
+                  'View My Ads',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.indigo,
+                  backgroundColor: Color.fromRGBO(36, 95, 117, 1),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     vertical: 14.0,
@@ -117,7 +123,7 @@ class ProfilePage extends StatelessWidget {
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.redAccent,
+                  backgroundColor: Color.fromRGBO(229, 64, 19, 1.0),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     vertical: 14.0,

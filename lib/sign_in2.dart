@@ -55,6 +55,7 @@ class _SignUpPage2State extends State<SignUpPage2> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color.fromRGBO(245, 254, 255, 1),
       resizeToAvoidBottomInset: true, // Ensures the keyboard pushes the content up
       body: SafeArea(
         child: SingleChildScrollView(

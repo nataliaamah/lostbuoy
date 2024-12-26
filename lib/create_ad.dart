@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:image/image.dart' as img;
+import 'package:flutter/gestures.dart';
 
 class CreateAdPage extends StatefulWidget {
   const CreateAdPage({super.key});
@@ -109,10 +110,11 @@ class _CreateAdPageState extends State<CreateAdPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color.fromRGBO(245, 254, 255, 1),
       appBar: AppBar(
-        title: const Text('Create Ad', style: TextStyle(color: Colors.black)),
+        title: const Text('Create Ad', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: Color.fromRGBO(245, 254, 255, 1),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
       ),
@@ -128,11 +130,11 @@ class _CreateAdPageState extends State<CreateAdPage> {
                   onTap: _selectImage,
                   child: Container(
                     height: 180,
-                    width: 400,
+                    width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.grey[200],
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey),
+                      border: Border.all(color: Colors.white),
                     ),
                     child: image == null
                         ? const Center(
@@ -175,38 +177,45 @@ class _CreateAdPageState extends State<CreateAdPage> {
                     TextFormField(
                       maxLines: 3,
                       decoration: const InputDecoration(labelText: 'Description'),
-                      validator: (value) =>
-                      value == null || value.trim().isEmpty ? 'Please provide a description.' : null,
+                      validator: (value) => value == null || value.trim().isEmpty
+                          ? 'Please provide a description.'
+                          : null,
                       onSaved: (value) => description = value,
                     ),
                   ],
                 ),
               ),
               _buildSection(
-                title: "Location",
-                child: SizedBox(
-                  height: 250,
-                  child: GoogleMap(
-                    initialCameraPosition: const CameraPosition(
-                      target: LatLng(5.261832, 103.165598),
-                      zoom: 18.5,
+                  title: "Location",
+                  child: SizedBox(
+                    height: 250,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Stack(
+                        children: [
+                          GoogleMap(
+                            initialCameraPosition: const CameraPosition(
+                              target: LatLng(5.261832, 103.165598),
+                              zoom: 18.5,
+                            ),
+                            markers: _markers,
+                            onTap: _onMapTapped,
+                            scrollGesturesEnabled: true,
+                            zoomControlsEnabled: true,
+                            myLocationEnabled: false,
+                          ),
+                        ],
+                      ),
                     ),
-                    markers: _markers,
-                    onTap: _onMapTapped,
-                    scrollGesturesEnabled: true,
-                    zoomControlsEnabled: true,
-                    myLocationEnabled: false,
                   ),
                 ),
-              ),
               ElevatedButton.icon(
                 onPressed: _saveAd,
-                label: const Text('Create Ad', style: TextStyle(fontWeight: FontWeight.bold)),
-                icon: const Icon(Icons.add),
+                label: const Text('Create Ad', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.indigo,
-                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  backgroundColor: Color.fromRGBO(36, 95, 117, 1),
+                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 35),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                 ),
               ),
             ],
@@ -218,6 +227,7 @@ class _CreateAdPageState extends State<CreateAdPage> {
 
   Widget _buildSection({required String title, required Widget child}) {
     return Card(
+      color: Colors.grey[100],
       margin: const EdgeInsets.only(bottom: 20),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
