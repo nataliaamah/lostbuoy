@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // For Firestore
 import 'main_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -11,14 +12,14 @@ class SignUpPage extends StatelessWidget {
 
   SignUpPage({Key? key}) : super(key: key);
 
-
   Future<void> _signInWithGoogle(BuildContext context) async {
     try {
       // Force user to choose a Google account
       await _googleSignIn.signOut();
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser != null) {
-        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+        final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
 
         final credential = GoogleAuthProvider.credential(
           accessToken: googleAuth.accessToken,
@@ -26,12 +27,23 @@ class SignUpPage extends StatelessWidget {
         );
 
         // Sign in to Firebase with the Google credentials
-        UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+        UserCredential userCredential =
+        await FirebaseAuth.instance.signInWithCredential(credential);
         final User? user = userCredential.user;
 
         if (user != null) {
-          final String email = user.email!;
+          final String email = user.email ?? 'No Email';
+          final String displayName = user.displayName ?? 'No Name';
+          final String uid = user.uid;
+
           if (email.endsWith('@student.uitm.edu.my')) {
+            // Save user data to Firestore
+            await FirebaseFirestore.instance.collection('users').doc(uid).set({
+              'email': email,
+              'displayName': displayName,
+              'createdAt': FieldValue.serverTimestamp(),
+            }, SetOptions(merge: true)); // Avoid overwriting existing data
+
             // Save login status using SharedPreferences
             final prefs = await SharedPreferences.getInstance();
             await prefs.setBool('isLoggedIn', true);
@@ -57,7 +69,6 @@ class SignUpPage extends StatelessWidget {
       );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {

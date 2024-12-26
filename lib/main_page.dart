@@ -145,9 +145,31 @@ class _MainPageState extends State<MainPage> {
                 ),
               ),
             ),
-            title: Text(
-              _selectedAd!['title'] ?? 'No Title',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _selectedAd!['title'] ?? 'No Title',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _selectedAd!['postType'] == 'Lost'
+                        ? Colors.redAccent
+                        : Colors.greenAccent,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    _selectedAd!['postType'] ?? 'Unknown',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
             ),
             subtitle: Text(
               _selectedAd!['description'] ?? 'No Description',
@@ -155,11 +177,15 @@ class _MainPageState extends State<MainPage> {
               overflow: TextOverflow.ellipsis,
             ),
             trailing: IconButton(
-              icon: const Icon(Icons.close),
+              icon: const Icon(Icons.arrow_forward),
               onPressed: () {
-                setState(() {
-                  _selectedAd = null;
-                });
+                // Navigate to detailed ad page
+                /*Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AdDetailsPage(adData: _selectedAd!),
+                  ),
+                );*/
               },
             ),
           ),
