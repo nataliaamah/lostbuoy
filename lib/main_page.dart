@@ -6,6 +6,7 @@ import 'package:lostbuoy/Utils/custom_navigation_bar.dart';
 import 'package:lostbuoy/Utils/map_style.dart'; // Import the map style
 import 'dart:ui' as ui;
 import 'package:flutter/services.dart';
+import 'view_ad.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -180,12 +181,12 @@ class _MainPageState extends State<MainPage> {
               icon: const Icon(Icons.arrow_forward),
               onPressed: () {
                 // Navigate to detailed ad page
-                /*Navigator.push(
+                Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => AdDetailsPage(adData: _selectedAd!),
+                    builder: (context) => ViewAdPage(adData: _selectedAd!),
                   ),
-                );*/
+                );
               },
             ),
           ),

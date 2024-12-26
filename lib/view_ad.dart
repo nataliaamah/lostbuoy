@@ -3,6 +3,9 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class ViewAdPage extends StatefulWidget {
   final Map<String, dynamic> adData;
@@ -179,12 +182,10 @@ class _ViewAdPageState extends State<ViewAdPage> {
                   const Divider(),
 
                   // Contact Information
+                  // Contact Section
                   const Text(
-                    'Contact Information:',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    'Contact Information',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
                   Row(
@@ -192,8 +193,7 @@ class _ViewAdPageState extends State<ViewAdPage> {
                       const CircleAvatar(
                         radius: 30,
                         backgroundColor: Colors.blue,
-                        child: Icon(Icons.person,
-                            size: 30, color: Colors.white),
+                        child: Icon(Icons.person, size: 30, color: Colors.white),
                       ),
                       const SizedBox(width: 16),
                       Column(
@@ -209,14 +209,82 @@ class _ViewAdPageState extends State<ViewAdPage> {
                           const SizedBox(height: 4),
                           Text(
                             phoneNumber,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey,
-                            ),
+                            style: const TextStyle(fontSize: 14, color: Colors.grey),
                           ),
                         ],
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 10),
+
+// WhatsApp Button
+                  Center(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        final whatsappUrl = 'https://wa.me/$phoneNumber';
+                        launchUrl(Uri.parse(whatsappUrl));
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 14,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: const FaIcon(FontAwesomeIcons.whatsapp, color: Colors.white),
+                      label: const Text(
+                        'Contact via WhatsApp',
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+// Claim/Solve Button
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (widget.adData['createdBy'] == FirebaseAuth.instance.currentUser?.uid) {
+                          // Logic to mark the ad as solved
+                          FirebaseFirestore.instance
+                              .collection('ads')
+                              .doc(widget.adData['id']) // Ensure ad document ID is passed
+                              .update({'status': 'solved'}).then((_) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Ad marked as solved')),
+                            );
+                            Navigator.pop(context); // Go back to the previous screen
+                          });
+                        } else {
+                          // Logic to claim the item
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('You have claimed the item!')),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: widget.adData['createdBy'] ==
+                            FirebaseAuth.instance.currentUser?.uid
+                            ? Colors.redAccent
+                            : Colors.indigo,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 14,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        widget.adData['createdBy'] == FirebaseAuth.instance.currentUser?.uid
+                            ? 'Solve Ad'
+                            : 'Claim Item',
+                        style: const TextStyle(fontSize: 16, color: Colors.white),
+                      ),
+                    ),
                   ),
                 ],
               ),
