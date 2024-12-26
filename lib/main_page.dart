@@ -147,12 +147,13 @@ class _MainPageState extends State<MainPage> {
               ),
             ),
             title: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Text(
                   _selectedAd!['title'] ?? 'No Title',
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
+                SizedBox(width: 10,),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(

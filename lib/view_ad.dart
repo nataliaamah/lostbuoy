@@ -18,7 +18,8 @@ class ViewAdPage extends StatefulWidget {
 
 class _ViewAdPageState extends State<ViewAdPage> {
   String creatorName = 'Loading...';
-  String phoneNumber = '+60123456789'; // Placeholder phone number
+  String phoneNumber = '+60123456789'; // Default placeholder
+  final currentUser = FirebaseAuth.instance.currentUser;
 
   @override
   void initState() {
@@ -37,7 +38,7 @@ class _ViewAdPageState extends State<ViewAdPage> {
         final data = userDoc.data() as Map<String, dynamic>;
         setState(() {
           creatorName = data['displayName'] ?? 'No Name';
-          phoneNumber = data['phoneNumber'] ?? '+60123456789'; // Replace with real phone logic
+          phoneNumber = data['phoneNumber'] ?? '+60123456789'; // Adjust as necessary
         });
       } else {
         setState(() {
@@ -52,12 +53,49 @@ class _ViewAdPageState extends State<ViewAdPage> {
     }
   }
 
+  Future<void> handleAction() async {
+    try {
+      if (widget.adData['createdBy'] == currentUser?.uid) {
+        // If the current user is the creator, verify claims
+        await FirebaseFirestore.instance
+            .collection('ads')
+            .doc(widget.adData['id'])
+            .update({'status': 'solved'});
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Ad marked as solved')),
+        );
+        Navigator.pop(context);
+      } else {
+        // If the current user is not the creator, request to claim/return the item
+        await FirebaseFirestore.instance
+            .collection('ads')
+            .doc(widget.adData['id'])
+            .collection('requests')
+            .doc(currentUser?.uid)
+            .set({
+          'requesterId': currentUser?.uid,
+          'requesterName': currentUser?.displayName,
+          'status': 'pending',
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Request sent to the ad owner.')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final GeoPoint location = widget.adData['location'];
     final LatLng adLocation = LatLng(location.latitude, location.longitude);
 
     return Scaffold(
+      backgroundColor: Colors.white,
       body: CustomScrollView(
         slivers: [
           // AppBar with image
@@ -115,35 +153,42 @@ class _ViewAdPageState extends State<ViewAdPage> {
                   ),
                   const SizedBox(height: 10),
 
-                  // Time
-                  // Date Row
+                  // Date
                   Row(
                     children: [
-                      const Icon(Icons.calendar_today, size: 20, color: Colors.grey),
+                      const Icon(Icons.calendar_today,
+                          size: 20, color: Colors.grey),
                       const SizedBox(width: 5),
                       Text(
                         DateFormat('EEE, MMM d, yyyy').format(
                           (widget.adData['createdAt'] as Timestamp).toDate(),
                         ),
-                        style: const TextStyle(fontSize: 14, color: Colors.grey),
+                        style:
+                        const TextStyle(fontSize: 14, color: Colors.grey),
                       ),
                     ],
                   ),
 
                   const SizedBox(height: 5),
+
+                  // Time
                   Row(
                     children: [
-                      const Icon(Icons.access_time, size: 20, color: Colors.grey),
+                      const Icon(Icons.access_time,
+                          size: 20, color: Colors.grey),
                       const SizedBox(width: 5),
                       Text(
                         DateFormat('h:mm a').format(
                           (widget.adData['createdAt'] as Timestamp).toDate(),
                         ),
-                        style: const TextStyle(fontSize: 14, color: Colors.grey),
+                        style:
+                        const TextStyle(fontSize: 14, color: Colors.grey),
                       ),
                     ],
                   ),
+
                   const SizedBox(height: 16),
+
                   // Description
                   const Text(
                     'Description:',
@@ -158,6 +203,7 @@ class _ViewAdPageState extends State<ViewAdPage> {
                     style: const TextStyle(fontSize: 15),
                   ),
                   const SizedBox(height: 16),
+
                   // Map Section
                   Container(
                     height: 200,
@@ -182,92 +228,68 @@ class _ViewAdPageState extends State<ViewAdPage> {
                   const Divider(),
 
                   // Contact Information
-                  // Contact Section
                   const Text(
                     'Contact Information',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
+
+                  // User Details
                   Row(
                     children: [
                       const CircleAvatar(
                         radius: 30,
-                        backgroundColor: Colors.blue,
+                        backgroundColor: Colors.grey,
                         child: Icon(Icons.person, size: 30, color: Colors.white),
                       ),
                       const SizedBox(width: 16),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            creatorName,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              creatorName,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            phoneNumber,
-                            style: const TextStyle(fontSize: 14, color: Colors.grey),
-                          ),
-                        ],
+                            const SizedBox(height: 4),
+                            Text(
+                              phoneNumber,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // WhatsApp Button
+                      CircleAvatar(
+                        radius: 25,
+                        backgroundColor: Colors.green,
+                        child: IconButton(
+                          icon: const FaIcon(FontAwesomeIcons.whatsapp, color: Colors.white),
+                          onPressed: () {
+                            final whatsappUrl = 'https://wa.me/$phoneNumber';
+                            launchUrl(Uri.parse(whatsappUrl));
+                          },
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 30),
 
-// WhatsApp Button
-                  Center(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        final whatsappUrl = 'https://wa.me/$phoneNumber';
-                        launchUrl(Uri.parse(whatsappUrl));
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 14,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      icon: const FaIcon(FontAwesomeIcons.whatsapp, color: Colors.white),
-                      label: const Text(
-                        'Contact via WhatsApp',
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-// Claim/Solve Button
+                  // Claim/Return Button
                   Center(
                     child: ElevatedButton(
-                      onPressed: () {
-                        if (widget.adData['createdBy'] == FirebaseAuth.instance.currentUser?.uid) {
-                          // Logic to mark the ad as solved
-                          FirebaseFirestore.instance
-                              .collection('ads')
-                              .doc(widget.adData['id']) // Ensure ad document ID is passed
-                              .update({'status': 'solved'}).then((_) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Ad marked as solved')),
-                            );
-                            Navigator.pop(context); // Go back to the previous screen
-                          });
-                        } else {
-                          // Logic to claim the item
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('You have claimed the item!')),
-                          );
-                        }
-                      },
+                      onPressed: handleAction,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: widget.adData['createdBy'] ==
-                            FirebaseAuth.instance.currentUser?.uid
+                            currentUser?.uid
                             ? Colors.redAccent
                             : Colors.indigo,
                         padding: const EdgeInsets.symmetric(
@@ -275,13 +297,15 @@ class _ViewAdPageState extends State<ViewAdPage> {
                           vertical: 14,
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(17),
                         ),
                       ),
                       child: Text(
-                        widget.adData['createdBy'] == FirebaseAuth.instance.currentUser?.uid
-                            ? 'Solve Ad'
-                            : 'Claim Item',
+                        widget.adData['createdBy'] == currentUser?.uid
+                            ? 'Verify Request'
+                            : (widget.adData['postType'] == 'Found'
+                            ? 'Claim Item'
+                            : 'Return Item'),
                         style: const TextStyle(fontSize: 16, color: Colors.white),
                       ),
                     ),
