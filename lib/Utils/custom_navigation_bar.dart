@@ -28,57 +28,63 @@ class CustomNavigationBar extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
+                // Home Button
                 IconButton(
                   icon: const Icon(Icons.home_rounded),
-                  iconSize: 27,
+                  iconSize: 30,
                   onPressed: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (_) => MainPage()), // Change to the main page
+                      MaterialPageRoute(builder: (_) => MainPage()), // Main page
                     );
                   },
                   color: Colors.black87,
                 ),
+                // Floating '+' Button Spacer
+                const SizedBox(width: 10), // Empty space for the floating button
+                // Profile Button
                 IconButton(
                   icon: const Icon(
                     Icons.person_rounded, // Profile icon
-                    size: 27, // Icon size (adjust as needed)
+                    size: 30,
                   ),
                   color: Colors.black87,
                   onPressed: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (_) => ProfilePage()), // Change to the main page
+                      MaterialPageRoute(builder: (_) => ProfilePage()), // Profile page
                     );
                   },
                 ),
-                const SizedBox(width: 40), // Spacer for the floating action button
               ],
             ),
           ),
 
-          // Floating Action Button styled as the '+', placed at the far right
+          // Positioned Floating '+' Button
           Positioned(
-            bottom: 5, // Adjust to position the circle further down if needed
-            right: 15,  // Shift it a little to the left for alignment
+            bottom: 20, // Adjust this value to control vertical positioning
+            left: MediaQuery.of(context).size.width / 2 - 40, // Center horizontally
             child: Container(
-              width: 80, // Increase the width
-              height: 80, // Increase the height
+              width: 80,
+              height: 80,
               decoration: const BoxDecoration(
-                color: Color(0xFFFFFFFF), // The background color of the circle
+                color: Color(0xFFFFFFFF), // Background color of the circle
                 shape: BoxShape.circle,
               ),
               child: Center(
                 child: Container(
-                  width: 60, // Adjust inner blue button width
-                  height: 60, // Adjust inner blue button height
+                  width: 65, // Inner button width
+                  height: 65, // Inner button height
                   decoration: const BoxDecoration(
-                    color: Colors.black87,
+                    color: Colors.black87, // Inner button color
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
-                    icon: const Icon(Icons.add, color: Color.fromRGBO(255, 249, 215, 1.0)),
-                    iconSize: 35,
+                    icon: const Icon(
+                      Icons.add,
+                      color: Color.fromRGBO(255, 249, 215, 1.0),
+                    ),
+                    iconSize: 30,
                     onPressed: () {
                       // Navigate to the CreateAdPage
                       Navigator.push(

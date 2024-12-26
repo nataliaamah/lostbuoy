@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert';
-import 'package:lostbuoy/Utils/custom_navigation_bar.dart';
-import 'package:lostbuoy/Utils/map_style.dart'; // Import the map style
 import 'dart:ui' as ui;
 import 'package:flutter/services.dart';
+import 'package:lostbuoy/Utils/custom_navigation_bar.dart';
 import 'view_ad.dart';
 
 class MainPage extends StatefulWidget {
@@ -68,6 +67,7 @@ class _MainPageState extends State<MainPage> {
         _markers.clear(); // Clear existing markers
         for (var ad in snapshot.docs) {
           final data = ad.data();
+          data['id'] = ad.id; // Add the document ID to the ad data
           final markerId = MarkerId(ad.id);
           final LatLng position = LatLng(
             data['location'].latitude,
@@ -115,7 +115,6 @@ class _MainPageState extends State<MainPage> {
             myLocationEnabled: false,
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
-            style: mapStyle, // Apply the map style directly here
           ),
           if (_selectedAd != null) _buildAdPopup(),
         ],
@@ -131,7 +130,6 @@ class _MainPageState extends State<MainPage> {
         padding: const EdgeInsets.all(16.0),
         child: Card(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          color: const Color.fromRGBO(255, 251, 238, 1.0),
           child: ListTile(
             leading: Container(
               width: 60,
@@ -147,13 +145,12 @@ class _MainPageState extends State<MainPage> {
               ),
             ),
             title: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Text(
                   _selectedAd!['title'] ?? 'No Title',
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
-                SizedBox(width: 10,),
+                const SizedBox(width: 10),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
@@ -178,10 +175,8 @@ class _MainPageState extends State<MainPage> {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            trailing: IconButton(
-              icon: const Icon(Icons.arrow_forward),
+            trailing: ElevatedButton(
               onPressed: () {
-                // Navigate to detailed ad page
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -189,6 +184,7 @@ class _MainPageState extends State<MainPage> {
                   ),
                 );
               },
+              child: const Text('View'),
             ),
           ),
         ),

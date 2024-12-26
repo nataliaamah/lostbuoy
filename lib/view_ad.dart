@@ -37,8 +37,8 @@ class _ViewAdPageState extends State<ViewAdPage> {
       if (userDoc.exists) {
         final data = userDoc.data() as Map<String, dynamic>;
         setState(() {
-          creatorName = data['displayName'] ?? 'No Name';
-          phoneNumber = data['phoneNumber'] ?? '+60123456789'; // Adjust as necessary
+          creatorName = data['displayName'] ?? 'No Name'; // Fetch display name
+          phoneNumber = data['phoneNumber'] ?? '+60123456789'; // Fetch phone number
         });
       } else {
         setState(() {
@@ -53,20 +53,40 @@ class _ViewAdPageState extends State<ViewAdPage> {
     }
   }
 
-  Future<void> handleAction() async {
+  Future<void> handleAction(String actionType) async {
     try {
       if (widget.adData['createdBy'] == currentUser?.uid) {
-        // If the current user is the creator, verify claims
-        await FirebaseFirestore.instance
+        // Access the 'requests' sub-collection for this ad
+        final requestsRef = FirebaseFirestore.instance
             .collection('ads')
             .doc(widget.adData['id'])
-            .update({'status': 'solved'});
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ad marked as solved')),
-        );
-        Navigator.pop(context);
+            .collection('requests');
+
+        // Query the requests where status is 'pending'
+        final pendingRequests = await requestsRef
+            .where('status', isEqualTo: 'pending')
+            .get();
+
+        if (pendingRequests.docs.isNotEmpty) {
+          // Update the first pending request (or loop through if necessary)
+          final requestDoc = pendingRequests.docs.first;
+          await requestDoc.reference.update({
+            'status': 'solved',
+            'verifiedBy': currentUser?.uid,
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Request verified and marked as solved')),
+          );
+          Navigator.pop(context);
+        } else {
+          // No pending requests found
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No pending request found to verify')),
+          );
+        }
       } else {
-        // If the current user is not the creator, request to claim/return the item
+        // If the current user is not the ad owner, submit a claim or return request
         await FirebaseFirestore.instance
             .collection('ads')
             .doc(widget.adData['id'])
@@ -75,11 +95,16 @@ class _ViewAdPageState extends State<ViewAdPage> {
             .set({
           'requesterId': currentUser?.uid,
           'requesterName': currentUser?.displayName,
+          'type': actionType,
           'status': 'pending',
           'timestamp': FieldValue.serverTimestamp(),
+          'adTitle': widget.adData['title'], // Include the ad title
+          'adId': widget.adData['id'], // Include the ad ID
+          'postType': widget.adData['postType'], // Include the post type (Lost/Found)
         });
+
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Request sent to the ad owner.')),
+          const SnackBar(content: Text('Request sent to the ad owner')),
         );
       }
     } catch (e) {
@@ -88,6 +113,7 @@ class _ViewAdPageState extends State<ViewAdPage> {
       );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -153,7 +179,7 @@ class _ViewAdPageState extends State<ViewAdPage> {
                   ),
                   const SizedBox(height: 10),
 
-                  // Date
+                  // Date and Time
                   Row(
                     children: [
                       const Icon(Icons.calendar_today,
@@ -163,15 +189,11 @@ class _ViewAdPageState extends State<ViewAdPage> {
                         DateFormat('EEE, MMM d, yyyy').format(
                           (widget.adData['createdAt'] as Timestamp).toDate(),
                         ),
-                        style:
-                        const TextStyle(fontSize: 14, color: Colors.grey),
+                        style: const TextStyle(fontSize: 14, color: Colors.grey),
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 5),
-
-                  // Time
                   Row(
                     children: [
                       const Icon(Icons.access_time,
@@ -181,12 +203,10 @@ class _ViewAdPageState extends State<ViewAdPage> {
                         DateFormat('h:mm a').format(
                           (widget.adData['createdAt'] as Timestamp).toDate(),
                         ),
-                        style:
-                        const TextStyle(fontSize: 14, color: Colors.grey),
+                        style: const TextStyle(fontSize: 14, color: Colors.grey),
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 16),
 
                   // Description
@@ -228,13 +248,6 @@ class _ViewAdPageState extends State<ViewAdPage> {
                   const Divider(),
 
                   // Contact Information
-                  const Text(
-                    'Contact Information',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 10),
-
-                  // User Details
                   Row(
                     children: [
                       const CircleAvatar(
@@ -243,41 +256,51 @@ class _ViewAdPageState extends State<ViewAdPage> {
                         child: Icon(Icons.person, size: 30, color: Colors.white),
                       ),
                       const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              creatorName,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                      Row(
+                        children: [
+                          const CircleAvatar(
+                            radius: 30,
+                            backgroundColor: Colors.grey,
+                            child: Icon(Icons.person, size: 30, color: Colors.white),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  creatorName, // Displays the creator's name
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  phoneNumber, // Displays the creator's phone number
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              phoneNumber,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey,
-                              ),
+                          ),
+                          CircleAvatar(
+                            radius: 25,
+                            backgroundColor: Colors.green,
+                            child: IconButton(
+                              icon: const FaIcon(FontAwesomeIcons.whatsapp,
+                                  color: Colors.white),
+                              onPressed: () {
+                                final whatsappUrl = 'https://wa.me/$phoneNumber';
+                                launchUrl(Uri.parse(whatsappUrl)); // Opens WhatsApp with the number
+                              },
                             ),
-                          ],
-                        ),
-                      ),
-                      // WhatsApp Button
-                      CircleAvatar(
-                        radius: 25,
-                        backgroundColor: Colors.green,
-                        child: IconButton(
-                          icon: const FaIcon(FontAwesomeIcons.whatsapp, color: Colors.white),
-                          onPressed: () {
-                            final whatsappUrl = 'https://wa.me/$phoneNumber';
-                            launchUrl(Uri.parse(whatsappUrl));
-                          },
-                        ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -286,7 +309,11 @@ class _ViewAdPageState extends State<ViewAdPage> {
                   // Claim/Return Button
                   Center(
                     child: ElevatedButton(
-                      onPressed: handleAction,
+                      onPressed: () => handleAction(
+                        widget.adData['postType'] == 'Found'
+                            ? 'claim'
+                            : 'return',
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: widget.adData['createdBy'] ==
                             currentUser?.uid
@@ -306,7 +333,8 @@ class _ViewAdPageState extends State<ViewAdPage> {
                             : (widget.adData['postType'] == 'Found'
                             ? 'Claim Item'
                             : 'Return Item'),
-                        style: const TextStyle(fontSize: 16, color: Colors.white),
+                        style:
+                        const TextStyle(fontSize: 16, color: Colors.white),
                       ),
                     ),
                   ),

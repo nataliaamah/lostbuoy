@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'main_page.dart';
-import 'sign_up.dart';
+import 'sign_in.dart';
 import 'onboarding.dart';
 
 

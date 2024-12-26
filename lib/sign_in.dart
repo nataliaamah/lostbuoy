@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // For Firestore
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'main_page.dart';
+import 'sign_in2.dart'; // Import the new page for entering the phone number
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SignUpPage extends StatelessWidget {
@@ -37,22 +38,34 @@ class SignUpPage extends StatelessWidget {
           final String uid = user.uid;
 
           if (email.endsWith('@student.uitm.edu.my')) {
-            // Save user data to Firestore
-            await FirebaseFirestore.instance.collection('users').doc(uid).set({
-              'email': email,
-              'displayName': displayName,
-              'createdAt': FieldValue.serverTimestamp(),
-            }, SetOptions(merge: true)); // Avoid overwriting existing data
+            // Check if the user already exists in Firestore
+            final userDoc = await FirebaseFirestore.instance
+                .collection('users')
+                .doc(uid)
+                .get();
 
-            // Save login status using SharedPreferences
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setBool('isLoggedIn', true);
+            if (!userDoc.exists) {
+              // Navigate to the phone number entry page for new users
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => SignUpPage2(
+                    uid: uid,
+                    email: email,
+                    displayName: displayName,
+                  ),
+                ),
+              );
+            } else {
+              // Existing user: Save login status and navigate to the main page
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('isLoggedIn', true);
 
-            // Navigate to the main page after successful sign-up
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const MainPage()),
-            );
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const MainPage()),
+              );
+            }
           } else {
             // Sign out and show an error if the email domain is not allowed
             await FirebaseAuth.instance.signOut();
@@ -95,7 +108,7 @@ class SignUpPage extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               const Text(
-                'Sign up with your UITM Google account to continue.',
+                'Sign in with your UITM Google account to continue.',
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.grey,
@@ -131,19 +144,6 @@ class SignUpPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              TextButton(
-                onPressed: () {
-                  // Add functionality for terms & privacy policy if needed
-                },
-                child: const Text(
-                  'Terms & Privacy Policy',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
             ],
           ),
         ),

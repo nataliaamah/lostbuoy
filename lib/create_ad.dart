@@ -23,7 +23,6 @@ class _CreateAdPageState extends State<CreateAdPage> {
 
   final Set<Marker> _markers = {};
 
-  // Function to select an image
   Future<void> _selectImage() async {
     final picker = ImagePicker();
     final pickedImage = await picker.pickImage(source: ImageSource.gallery);
@@ -39,7 +38,6 @@ class _CreateAdPageState extends State<CreateAdPage> {
     }
   }
 
-  // Function to handle map taps
   void _onMapTapped(LatLng location) {
     setState(() {
       selectedLocation = location;
@@ -65,38 +63,21 @@ class _CreateAdPageState extends State<CreateAdPage> {
     }
   }
 
-  // Function to save ad to Firestore
   Future<void> _saveAd() async {
-    if (!_formKey.currentState!.validate()) {
-      // If the form is not valid, return early
-      return;
-    }
-
-    // Save the form fields
+    if (!_formKey.currentState!.validate()) return;
     _formKey.currentState!.save();
 
-    // Check if image is selected
-    if (image == null) {
+    if (image == null || selectedLocation == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please upload an image.')),
-      );
-      return;
-    }
-
-    // Check if location is selected
-    if (selectedLocation == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a location on the map.')),
+        const SnackBar(content: Text('Please upload an image and select a location.')),
       );
       return;
     }
 
     try {
-      // Compress and encode image to Base64
       final base64Image = await _compressAndEncodeImage(File(image!.path));
-
-      // Get the current user
       final currentUser = FirebaseAuth.instance.currentUser;
+
       if (currentUser == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('User not logged in!')),
@@ -104,15 +85,14 @@ class _CreateAdPageState extends State<CreateAdPage> {
         return;
       }
 
-      // Save ad to Firestore
       await FirebaseFirestore.instance.collection('ads').add({
-        'title': title, // Save the title
-        'description': description, // Save the description
+        'title': title,
+        'description': description,
         'postType': postType,
-        'imageBase64': base64Image, // Use compressed Base64 string
+        'imageBase64': base64Image,
         'location': GeoPoint(selectedLocation!.latitude, selectedLocation!.longitude),
         'createdAt': FieldValue.serverTimestamp(),
-        'createdBy': currentUser.uid, // Save the user ID
+        'createdBy': currentUser.uid,
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -129,14 +109,10 @@ class _CreateAdPageState extends State<CreateAdPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
       appBar: AppBar(
-        title: const Text(
-          'Create Ad',
-          style: TextStyle(color: Colors.black),
-        ),
+        title: const Text('Create Ad', style: TextStyle(color: Colors.black)),
         centerTitle: true,
-        backgroundColor: const Color(0xFFFFFFFF),
+        backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
       ),
@@ -154,21 +130,13 @@ class _CreateAdPageState extends State<CreateAdPage> {
                     height: 180,
                     width: 400,
                     decoration: BoxDecoration(
-                      color: const Color.fromRGBO(255, 255, 255, 1.0),
+                      color: Colors.grey[200],
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color.fromRGBO(255, 255, 255, 1.0)),
+                      border: Border.all(color: Colors.grey),
                     ),
                     child: image == null
-                        ? const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.upload, size: 50, color: Colors.black),
-                        SizedBox(height: 8),
-                        Text(
-                          'Tap to upload',
-                          style: TextStyle(color: Colors.black),
-                        ),
-                      ],
+                        ? const Center(
+                      child: Icon(Icons.upload, size: 50, color: Colors.black),
                     )
                         : Image.file(
                       File(image!.path),
@@ -190,11 +158,7 @@ class _CreateAdPageState extends State<CreateAdPage> {
                     DropdownMenuItem(value: 'Lost', child: Text('Lost')),
                     DropdownMenuItem(value: 'Found', child: Text('Found')),
                   ],
-                  onChanged: (value) {
-                    setState(() {
-                      postType = value!;
-                    });
-                  },
+                  onChanged: (value) => setState(() => postType = value!),
                 ),
               ),
               _buildSection(
@@ -203,28 +167,17 @@ class _CreateAdPageState extends State<CreateAdPage> {
                   children: [
                     TextFormField(
                       decoration: const InputDecoration(labelText: 'Title'),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please provide a title.';
-                        }
-                        return null;
-                      },
-                      onSaved: (value) {
-                        title = value;
-                      },
+                      validator: (value) =>
+                      value == null || value.trim().isEmpty ? 'Please provide a title.' : null,
+                      onSaved: (value) => title = value,
                     ),
+                    const SizedBox(height: 8),
                     TextFormField(
                       maxLines: 3,
                       decoration: const InputDecoration(labelText: 'Description'),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please provide a description.';
-                        }
-                        return null;
-                      },
-                      onSaved: (value) {
-                        description = value;
-                      },
+                      validator: (value) =>
+                      value == null || value.trim().isEmpty ? 'Please provide a description.' : null,
+                      onSaved: (value) => description = value,
                     ),
                   ],
                 ),
@@ -233,44 +186,27 @@ class _CreateAdPageState extends State<CreateAdPage> {
                 title: "Location",
                 child: SizedBox(
                   height: 250,
-                  child: GestureDetector(
-                    onVerticalDragUpdate: (_) {},
-                    child: GoogleMap(
-                      initialCameraPosition: const CameraPosition(
-                        target: LatLng(5.261832, 103.165598),
-                        zoom: 18.5,
-                      ),
-                      markers: _markers,
-                      onTap: _onMapTapped,
-                      scrollGesturesEnabled: true,
-                      zoomControlsEnabled: true,
-                      zoomGesturesEnabled: true,
-                      myLocationEnabled: false,
-                      myLocationButtonEnabled: false,
+                  child: GoogleMap(
+                    initialCameraPosition: const CameraPosition(
+                      target: LatLng(5.261832, 103.165598),
+                      zoom: 18.5,
                     ),
+                    markers: _markers,
+                    onTap: _onMapTapped,
+                    scrollGesturesEnabled: true,
+                    zoomControlsEnabled: true,
+                    myLocationEnabled: false,
                   ),
                 ),
               ),
               ElevatedButton.icon(
                 onPressed: _saveAd,
-                label: const Text(
-                  'Create Ad',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                label: const Text('Create Ad', style: TextStyle(fontWeight: FontWeight.bold)),
+                icon: const Icon(Icons.add),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromRGBO(103, 51, 152, 1.0),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 14.0,
-                    horizontal: 24.0,
-                  ),
-                  elevation: 5,
+                  backgroundColor: Colors.indigo,
+                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
               ),
             ],
@@ -282,23 +218,14 @@ class _CreateAdPageState extends State<CreateAdPage> {
 
   Widget _buildSection({required String title, required Widget child}) {
     return Card(
-      color: const Color(0xFFF1F1F1),
-      elevation: 3.5,
       margin: const EdgeInsets.only(bottom: 20),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-                fontSize: 15,
-              ),
-            ),
-            const SizedBox(height: 10),
+            Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 8),
             child,
           ],
         ),
