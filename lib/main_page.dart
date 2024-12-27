@@ -63,40 +63,44 @@ class _MainPageState extends State<MainPage> {
 
   void _listenToAdUpdates() {
     FirebaseFirestore.instance.collection('ads').snapshots().listen((snapshot) {
-      setState(() {
-        _markers.clear(); // Clear existing markers
-        for (var ad in snapshot.docs) {
-          final data = ad.data();
-          data['id'] = ad.id; // Add the document ID to the ad data
+      if (mounted) {
+        setState(() {
+          _markers.clear(); // Clear existing markers
+          for (var ad in snapshot.docs) {
+            final data = ad.data();
+            data['id'] = ad.id; // Add the document ID to the ad data
 
-          // Skip ads marked as solved
-          if (data.containsKey('status') && data['status'] == 'solved') {
-            continue;
+            // Skip ads marked as solved
+            if (data.containsKey('status') && data['status'] == 'solved') {
+              continue;
+            }
+
+            final markerId = MarkerId(ad.id);
+            final LatLng position = LatLng(
+              data['location'].latitude,
+              data['location'].longitude,
+            );
+
+            // Choose the appropriate icon based on post type
+            final BitmapDescriptor markerIcon = data['postType'] == 'Lost'
+                ? lostMarkerIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRose)
+                : foundMarkerIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure);
+
+            _markers[markerId] = Marker(
+              markerId: markerId,
+              position: position,
+              icon: markerIcon,
+              onTap: () {
+                if (mounted) {
+                  setState(() {
+                    _selectedAd = data;
+                  });
+                }
+              },
+            );
           }
-
-          final markerId = MarkerId(ad.id);
-          final LatLng position = LatLng(
-            data['location'].latitude,
-            data['location'].longitude,
-          );
-
-          // Choose the appropriate icon based on post type
-          final BitmapDescriptor markerIcon = data['postType'] == 'Lost'
-              ? lostMarkerIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRose)
-              : foundMarkerIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure);
-
-          _markers[markerId] = Marker(
-            markerId: markerId,
-            position: position,
-            icon: markerIcon,
-            onTap: () {
-              setState(() {
-                _selectedAd = data;
-              });
-            },
-          );
-        }
-      });
+        });
+      }
     });
   }
 

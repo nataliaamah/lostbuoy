@@ -88,7 +88,7 @@ class _SignUpPage2State extends State<SignUpPage2> {
               TextFormField(
                 controller: _phoneController,
                 keyboardType: TextInputType.number,
-                maxLength: 10, // Limit to 10 characters
+                maxLength: 11,
                 decoration: const InputDecoration(
                   labelText: 'Phone Number',
                   hintText: 'e.g., 0123456789',

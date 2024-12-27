@@ -26,18 +26,64 @@ class _CreateAdPageState extends State<CreateAdPage> {
 
   Future<void> _selectImage() async {
     final picker = ImagePicker();
-    final pickedImage = await picker.pickImage(source: ImageSource.gallery);
 
-    if (pickedImage != null) {
-      setState(() {
-        image = pickedImage;
-      });
-    } else {
+    // Show options to the user
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Take a Photo'),
+                onTap: () {
+                  Navigator.of(context).pop('camera');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Choose from Gallery'),
+                onTap: () {
+                  Navigator.of(context).pop('gallery');
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (action == null) return; // User dismissed the dialog
+
+    XFile? pickedImage;
+
+    try {
+      if (action == 'camera') {
+        // Capture a photo using the camera
+        pickedImage = await picker.pickImage(source: ImageSource.camera);
+      } else if (action == 'gallery') {
+        // Select an image from the gallery
+        pickedImage = await picker.pickImage(source: ImageSource.gallery);
+      }
+
+      if (pickedImage != null) {
+        setState(() {
+          image = pickedImage;
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No image selected!')),
+        );
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No image selected!')),
+        SnackBar(content: Text('Error selecting image: $e')),
       );
     }
   }
+
 
   void _onMapTapped(LatLng location) {
     setState(() {

@@ -48,7 +48,9 @@ class _ViewMyAdsPageState extends State<ViewMyAdsPage> {
                   const Text(
                     "No ads created yet",
                     style: TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold, color: Colors.grey),
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey),
                   ),
                   const SizedBox(height: 10),
                   const Text(
@@ -65,15 +67,13 @@ class _ViewMyAdsPageState extends State<ViewMyAdsPage> {
               .where((doc) {
             final data = doc.data() as Map<String, dynamic>;
             return !data.containsKey('status') || data['status'] != 'solved';
-          })
-              .toList();
+          }).toList();
 
           final solvedAds = snapshot.data!.docs
               .where((doc) {
             final data = doc.data() as Map<String, dynamic>;
             return data.containsKey('status') && data['status'] == 'solved';
-          })
-              .toList();
+          }).toList();
 
           return ListView(
             children: [
@@ -134,13 +134,20 @@ class _ViewMyAdsPageState extends State<ViewMyAdsPage> {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            trailing: Text(
-              adData['createdAt'] != null
-                  ? DateFormat('EEE, MMM d').format(
-                (adData['createdAt'] as Timestamp).toDate(),
-              )
-                  : "Unknown Date",
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            trailing: PopupMenuButton<String>(
+              color: Colors.white,
+              onSelected: (value) {
+                if (value == 'delete') {
+                  _deleteAd(adId);
+                }
+              },
+              icon: const Icon(Icons.more_vert, color: Colors.black),
+              itemBuilder: (context) => [
+                const PopupMenuItem<String>(
+                  value: 'delete',
+                  child: Text('Delete Ad'),
+                ),
+              ],
             ),
           ),
           if (!isSolved) _buildRequestSection(adId),
@@ -190,7 +197,7 @@ class _ViewMyAdsPageState extends State<ViewMyAdsPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
                 ),
-                child: const Text("Accept", style: TextStyle(color: Colors.white),),
+                child: const Text("Accept", style: TextStyle(color: Colors.white)),
               ),
             );
           }).toList(),
@@ -201,6 +208,7 @@ class _ViewMyAdsPageState extends State<ViewMyAdsPage> {
 
   Future<void> _acceptRequest(String adId, String requestId) async {
     try {
+      // Mark the request as solved
       await FirebaseFirestore.instance
           .collection('ads')
           .doc(adId)
@@ -208,6 +216,7 @@ class _ViewMyAdsPageState extends State<ViewMyAdsPage> {
           .doc(requestId)
           .update({'status': 'solved'});
 
+      // Mark the ad as solved
       await FirebaseFirestore.instance
           .collection('ads')
           .doc(adId)
@@ -219,6 +228,32 @@ class _ViewMyAdsPageState extends State<ViewMyAdsPage> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error accepting request: $e")),
+      );
+    }
+  }
+
+  Future<void> _deleteAd(String adId) async {
+    try {
+      // Delete associated requests
+      final requests = await FirebaseFirestore.instance
+          .collection('ads')
+          .doc(adId)
+          .collection('requests')
+          .get();
+
+      for (var request in requests.docs) {
+        await request.reference.delete();
+      }
+
+      // Delete the ad itself
+      await FirebaseFirestore.instance.collection('ads').doc(adId).delete();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Ad deleted successfully.")),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error deleting ad: $e")),
       );
     }
   }

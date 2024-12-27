@@ -103,7 +103,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             height: 8.0,
             width: _currentPage == index ? 20.0 : 8.0,
             decoration: BoxDecoration(
-              color: _currentPage == index ? const Color(0xFF673398) : Colors.grey,
+              color: _currentPage == index ? const Color.fromRGBO(36, 95, 117, 1) : Colors.grey,
               borderRadius: BorderRadius.circular(5.0),
             ),
           ),
@@ -125,7 +125,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             onPressed: () {
               _pageController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
             },
-            child: const Text("Back", style: TextStyle(fontSize: 16, color: Color(0xFF673398))),
+            child: const Text("Back", style: TextStyle(fontSize: 16, color: Color.fromRGBO(36, 95, 117, 1))),
           )
               : const SizedBox.shrink(),
           _currentPage < onboardingData.length - 1
@@ -133,11 +133,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             onPressed: () {
               _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
             },
-            child: const Text("Next", style: TextStyle(fontSize: 16, color: Color(0xFF673398))),
+            child: const Text("Next", style: TextStyle(fontSize: 16, color: Color.fromRGBO(36, 95, 117, 1))),
           )
               : TextButton(
             onPressed: _completeOnboarding,
-            child: const Text("Done", style: TextStyle(fontSize: 16, color: Color(0xFF673398))),
+            child: const Text("Done", style: TextStyle(fontSize: 16, color: Color.fromRGBO(229, 64, 19, 1.0), fontWeight: FontWeight.bold)),
           ),
         ],
       ),

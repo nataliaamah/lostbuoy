@@ -305,12 +305,14 @@ class _ViewAdPageState extends State<ViewAdPage> {
                   // Claim/Return Button
                   Center(
                     child: ElevatedButton(
-                      onPressed: () => handleAction(
+                      onPressed: widget.adData['createdBy'] == currentUser?.uid
+                          ? null // Disable the button for the owner of the ad
+                          : () => handleAction(
                         widget.adData['postType'] == 'Found' ? 'claim' : 'return',
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: widget.adData['createdBy'] == currentUser?.uid
-                            ? Colors.redAccent
+                            ? Colors.grey // Disabled button color for the owner
                             : Colors.indigo,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 24,
@@ -322,7 +324,7 @@ class _ViewAdPageState extends State<ViewAdPage> {
                       ),
                       child: Text(
                         widget.adData['createdBy'] == currentUser?.uid
-                            ? 'Verify Request'
+                            ? 'This is your Ad' // Placeholder text for the owner
                             : (widget.adData['postType'] == 'Found'
                             ? 'Claim Item'
                             : 'Return Item'),

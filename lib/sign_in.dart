@@ -86,7 +86,7 @@ class SignUpPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromRGBO(245, 254, 255, 1),
+      backgroundColor: Color.fromRGBO(255, 255, 255, 1.0),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(20.0),

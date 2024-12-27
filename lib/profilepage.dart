@@ -24,19 +24,20 @@ class ProfilePage extends StatelessWidget {
     email.contains('@') ? email.split('@')[0] : 'Unknown';
 
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        elevation: 0,
-      ),
       backgroundColor: Colors.white,
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          padding: const EdgeInsets.symmetric(horizontal: 10.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              const SizedBox(height: 30),
+              SizedBox(height: 30,),
+              Container(
+                height: 80,
+                width: 100,
+                child: Image.asset("lib/asset/app_icon_3_trans.png"),
+              ),
+              SizedBox(height: 20,),
               const Text(
                 'Profile',
                 style: TextStyle(
