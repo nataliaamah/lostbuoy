@@ -17,10 +17,8 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   late GoogleMapController _mapController;
 
-  // Center of UiTM campus
   final LatLng _center = const LatLng(5.261832, 103.165598);
 
-  // UiTM campus boundaries
   final LatLngBounds _uitmBounds = LatLngBounds(
     southwest: const LatLng(5.2605, 103.1645),
     northeast: const LatLng(5.2630, 103.1667),
@@ -32,32 +30,23 @@ class _MainPageState extends State<MainPage> {
   BitmapDescriptor? lostMarkerIcon;
   BitmapDescriptor? foundMarkerIcon;
 
+  String searchTerm = ""; // Added search term
+  final TextEditingController _searchController = TextEditingController(); // Controller for the search bar
+
   @override
   void initState() {
     super.initState();
     _loadCustomMarkerIcons().then((_) => _listenToAdUpdates());
   }
 
-  Future<BitmapDescriptor> _resizeAndCreateMarker(String assetPath, int width) async {
-    ByteData data = await rootBundle.load(assetPath);
-    ui.Codec codec = await ui.instantiateImageCodec(
-      data.buffer.asUint8List(),
-      targetWidth: width, // Adjust width to control size
-    );
-    ui.FrameInfo frameInfo = await codec.getNextFrame();
-    final ByteData? resizedData =
-    await frameInfo.image.toByteData(format: ui.ImageByteFormat.png);
-    return BitmapDescriptor.fromBytes(resizedData!.buffer.asUint8List());
-  }
-
   Future<void> _loadCustomMarkerIcons() async {
     lostMarkerIcon = await _resizeAndCreateMarker(
       'lib/asset/lost_marker.png',
-      100, // Adjust marker size here
+      100,
     );
     foundMarkerIcon = await _resizeAndCreateMarker(
       'lib/asset/found_marker.png',
-      100, // Adjust marker size here
+      100,
     );
   }
 
@@ -75,13 +64,19 @@ class _MainPageState extends State<MainPage> {
               continue;
             }
 
+            // Check if the title or description contains the search term
+            if (searchTerm.isNotEmpty &&
+                !data['title'].toString().toLowerCase().contains(searchTerm.toLowerCase()) &&
+                !data['description'].toString().toLowerCase().contains(searchTerm.toLowerCase())) {
+              continue;
+            }
+
             final markerId = MarkerId(ad.id);
             final LatLng position = LatLng(
               data['location'].latitude,
               data['location'].longitude,
             );
 
-            // Choose the appropriate icon based on post type
             final BitmapDescriptor markerIcon = data['postType'] == 'Lost'
                 ? lostMarkerIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRose)
                 : foundMarkerIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure);
@@ -103,7 +98,6 @@ class _MainPageState extends State<MainPage> {
       }
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -127,6 +121,51 @@ class _MainPageState extends State<MainPage> {
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
           ),
+          Positioned(
+            top: 50,
+            left: 20,
+            right: 20,
+            child: TextField(
+              controller: _searchController, // Attach the controller
+              onChanged: (value) {
+                setState(() {
+                  searchTerm = value;
+                });
+                _listenToAdUpdates();
+              },
+              decoration: InputDecoration(
+                hintText: "Search ads...",
+                prefixIcon: const Icon(Icons.search),
+                hintStyle: TextStyle(color: Colors.grey[500]),
+                suffixIcon: searchTerm.isNotEmpty
+                    ? IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    setState(() {
+                      searchTerm = ""; // Clear the search term
+                      _searchController.clear(); // Clear the text field
+                    });
+                    _listenToAdUpdates(); // Reload all markers
+                  },
+                )
+                    : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: BorderSide.none, // Remove the default border
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: const BorderSide(color: Colors.white, width: 2), // White border
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: const BorderSide(color: Colors.white, width: 2), // White border when focused
+                ),
+                filled: true,
+                fillColor: Colors.white, // Background color
+              ),
+            ),
+          ),
           if (_selectedAd != null) _buildAdPopup(),
         ],
       ),
@@ -134,27 +173,37 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
+  Future<BitmapDescriptor> _resizeAndCreateMarker(String assetPath, int width) async {
+    ByteData data = await rootBundle.load(assetPath);
+    ui.Codec codec = await ui.instantiateImageCodec(
+      data.buffer.asUint8List(),
+      targetWidth: width,
+    );
+    ui.FrameInfo frameInfo = await codec.getNextFrame();
+    final ByteData? resizedData = await frameInfo.image.toByteData(format: ui.ImageByteFormat.png);
+    return BitmapDescriptor.fromBytes(resizedData!.buffer.asUint8List());
+  }
+
   Widget _buildAdPopup() {
     return Stack(
       children: [
         Align(
-          alignment: Alignment.bottomCenter, // Keep it aligned at the bottom
+          alignment: Alignment.bottomCenter,
           child: Padding(
-            padding: const EdgeInsets.only(bottom: 35), // Adjust the bottom padding to move up or down
+            padding: const EdgeInsets.only(bottom: 35),
             child: Card(
               color: Colors.white,
-              elevation: 4, // Adds shadow for better separation
+              elevation: 4,
               shadowColor: Colors.grey[300],
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              margin: const EdgeInsets.symmetric(horizontal: 16), // Adds spacing around the card
+              margin: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(
-                height: 100, // Adjust the height for a taller card
-                padding: const EdgeInsets.all(8), // Add padding inside the card
+                height: 100,
+                padding: const EdgeInsets.all(8),
                 child: Row(
                   children: [
-                    // Leading image with placeholder
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: Image.memory(
@@ -171,13 +220,12 @@ class _MainPageState extends State<MainPage> {
                         },
                       ),
                     ),
-                    const SizedBox(width: 10), // Space between image and text
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Title
                           Text(
                             _selectedAd!['title'] ?? 'No Title',
                             style: const TextStyle(
@@ -188,7 +236,6 @@ class _MainPageState extends State<MainPage> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 4),
-                          // Description
                           Text(
                             _selectedAd!['description'] ?? 'No Description',
                             maxLines: 2,
@@ -198,11 +245,10 @@ class _MainPageState extends State<MainPage> {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 8), // Add spacing between text and trailing icons
+                    const SizedBox(width: 8),
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Post Type Badge
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
@@ -220,8 +266,7 @@ class _MainPageState extends State<MainPage> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 10), // Space between badge and arrow
-                        // Trailing Arrow
+                        const SizedBox(height: 10),
                         IconButton(
                           icon: const Icon(Icons.arrow_forward, color: Colors.black),
                           onPressed: () {
